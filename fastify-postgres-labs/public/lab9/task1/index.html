@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ЛР9. Задание 1</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      color: #202124;
+      background: #f5f7fb;
+    }
+
+    main {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 32px 18px;
+    }
+
+    a {
+      color: #174ea6;
+    }
+
+    h1 {
+      margin: 18px 0 20px;
+      font-size: 28px;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    .stat, .panel {
+      padding: 18px;
+      border: 1px solid #d8dee9;
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    .stat strong {
+      display: block;
+      margin-top: 8px;
+      font-size: 24px;
+    }
+
+    .search {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+
+    input {
+      min-height: 42px;
+      padding: 8px 10px;
+      border: 1px solid #c6ccd6;
+      border-radius: 6px;
+      font: inherit;
+      box-sizing: border-box;
+    }
+
+    .search input {
+      flex: 1;
+    }
+
+    button {
+      min-height: 42px;
+      padding: 0 16px;
+      border: 0;
+      border-radius: 6px;
+      background: #174ea6;
+      color: #fff;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      padding: 12px;
+      border-bottom: 1px solid #e6eaf0;
+      text-align: left;
+    }
+
+    th {
+      background: #eaf1fb;
+      color: #174ea6;
+    }
+
+    .message {
+      padding: 16px;
+      border: 1px solid #d8dee9;
+      border-radius: 8px;
+      background: #fff;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <a href="/lab9/">Назад к ЛР9</a>
+    <h1>Задание 1. Склад и поиск товаров</h1>
+
+    <section class="stats">
+      <div class="stat">Наименований<strong id="totalProducts">0</strong></div>
+      <div class="stat">Всего единиц<strong id="totalItems">0</strong></div>
+      <div class="stat">Общая стоимость<strong id="totalValue">0 ₽</strong></div>
+    </section>
+
+    <form class="search" id="searchForm">
+      <input type="search" id="query" placeholder="Поиск по наименованию">
+      <button type="submit">Найти</button>
+    </form>
+
+    <section class="panel">
+      <div id="list" class="message">Загрузка...</div>
+    </section>
+  </main>
+
+  <script>
+    const API = '/api/lab9';
+    const formatPrice = (cents) => (cents / 100).toLocaleString('ru-RU', {
+      style: 'currency',
+      currency: 'RUB',
+    });
+    const escapeHtml = (value) => String(value).replace(/[&<>"']/g, (char) => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#039;',
+    }[char]));
+
+    async function requestJson(url) {
+      const response = await fetch(url);
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.details || data.error || 'Ошибка запроса');
+      }
+      return data;
+    }
+
+    async function loadStock() {
+      const stock = await requestJson(`${API}/task1/stock`);
+      document.getElementById('totalProducts').textContent = stock.total_products;
+      document.getElementById('totalItems').textContent = stock.total_items;
+      document.getElementById('totalValue').textContent = formatPrice(stock.total_value);
+    }
+
+    async function loadProducts(q = '') {
+      const list = document.getElementById('list');
+      list.className = 'message';
+      list.textContent = 'Загрузка...';
+
+      const products = await requestJson(`${API}/task1/products${q ? `?q=${encodeURIComponent(q)}` : ''}`);
+      if (products.length === 0) {
+        list.textContent = 'Товары не найдены';
+        return;
+      }
+
+      list.className = '';
+      list.innerHTML = `
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Наименование</th>
+              <th>Цена</th>
+              <th>Остаток</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${products.map((product) => `
+              <tr>
+                <td>${product.id}</td>
+                <td>${escapeHtml(product.title)}</td>
+                <td>${formatPrice(product.price)}</td>
+                <td>${product.amount}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+    }
+
+    document.getElementById('searchForm').addEventListener('submit', async (event) => {
+      event.preventDefault();
+      try {
+        await loadProducts(document.getElementById('query').value.trim());
+      } catch (error) {
+        document.getElementById('list').textContent = error.message;
+      }
+    });
+
+    Promise.all([loadStock(), loadProducts()]).catch((error) => {
+      document.getElementById('list').textContent = error.message;
+    });
+  </script>
+</body>
+</html>

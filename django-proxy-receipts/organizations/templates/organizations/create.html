@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block title %}Добавить организацию{% endblock %}
+
+{% block content %}
+<h4>Добавить организацию</h4>
+<form method="post">
+  {% csrf_token %}
+  <div class="input-field">{{ form.name }}<label for="{{ form.name.id_for_label }}">Название</label></div>
+  <div class="input-field">{{ form.address }}<label for="{{ form.address.id_for_label }}">Адрес</label></div>
+  <div class="input-field">{{ form.account }}<label for="{{ form.account.id_for_label }}">Счёт</label></div>
+  <div class="input-field">{{ form.chief }}<label for="{{ form.chief.id_for_label }}">Руководитель</label></div>
+  <div class="input-field">{{ form.financial_chief }}<label for="{{ form.financial_chief.id_for_label }}">Главный бухгалтер</label></div>
+<div class="input-field">{{ form.okpo }}<label class="active" for="{{ form.okpo.id_for_label }}">{{ form.okpo.label }}</label>{{ form.okpo.errors }}</div>
+<div class="input-field">{{ form.inn }}<label class="active" for="{{ form.inn.id_for_label }}">{{ form.inn.label }}</label>{{ form.inn.errors }}</div>
+  <button class="btn green">Добавить</button>
+</form>
+{% endblock %}

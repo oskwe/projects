@@ -1,0 +1,29 @@
+{% load static versioned_static %}<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>{% block title %}Система документов{% endblock %}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <!-- Иконки Material Icons и Materialize CSS хранятся локально: интернет не нужен -->
+  <link href="{% static 'css/material-icons.css' %}" rel="stylesheet">
+  <link href="{% static 'css/materialize.min.css' %}" rel="stylesheet">
+  <link href="{% static 'css/styles.css' %}" rel="stylesheet">
+  <link href="{% versioned_static 'css/compatibility.css' %}" rel="stylesheet">
+  <link href="{% versioned_static 'css/receipts.css' %}" rel="stylesheet">
+</head>
+<body class="grey lighten-4 has-fixed-sidenav">
+  {% include 'includes/_sidenav.html' %}
+  {% include 'includes/_navbar.html' %}
+  <main class="section">
+    <div class="container">
+      {% for message in messages %}<p role="status" class="{% if message.tags == 'error' %}red-text{% else %}green-text{% endif %}">{{ message }}</p>{% endfor %}
+      {% if form.errors %}<div role="alert" class="red-text form-errors"><p>Исправьте ошибки в форме:</p>{{ form.errors }}</div>{% endif %}
+      {% block content %}{% endblock %}
+    </div>
+  </main>
+  <!-- Скрипты -->
+  <script src="{% static 'js/materialize.min.js' %}"></script>
+  <script src="{% versioned_static 'js/site.js' %}"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

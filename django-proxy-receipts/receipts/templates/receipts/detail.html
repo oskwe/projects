@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block title %}Акт оприходования № {{ act.number }}{% endblock %}
+{% block content %}
+<h4>Акт оприходования № {{ act.number }} от {{ act.date|date:'d.m.Y' }}</h4>
+<div class="document-actions">
+  <a class="btn green" href="{% url 'receipts:print' act.pk %}"><i class="material-icons left">print</i>Печать / PDF</a>
+  <a class="btn orange" href="{% url 'receipts:edit' act.pk %}"><i class="material-icons left">edit</i>Изменить</a>
+  <a class="btn teal" href="{% url 'receipts:copy' act.pk %}"><i class="material-icons left">content_copy</i>Копия</a>
+  <a class="btn red" href="{% url 'receipts:delete' act.pk %}"><i class="material-icons left">delete</i>Удалить</a>
+  <a href="{% url 'receipts:list' %}" class="btn grey">К журналу</a>
+</div>
+<table class="highlight">
+  <tr><th>Организация (заказчик)</th><td>{{ act.snapshot.organization.name }}</td></tr>
+  <tr><th>Структурное подразделение</th><td>{{ act.snapshot.department.name|default:"—" }}</td></tr>
+  <tr><th>Подрядчик</th><td>{{ act.snapshot.contractor.name }}</td></tr>
+  <tr><th>Объект разборки (демонтажа)</th><td>{{ act.object_name }}</td></tr>
+  <tr><th>Основание</th><td>{{ act.basis|default:"—" }}</td></tr>
+  <tr><th>Склад</th><td>{{ act.snapshot.warehouse.name }}</td></tr>
+  <tr><th>Комиссия</th><td>{{ act.snapshot.chairman.full_name }} (председатель), {{ act.snapshot.member_first.full_name }}{% if act.snapshot.member_second.full_name %}, {{ act.snapshot.member_second.full_name }}{% endif %}</td></tr>
+  <tr><th>Принял (кладовщик)</th><td>{{ act.snapshot.storekeeper.full_name|default:"—" }}</td></tr>
+  <tr><th>Представитель подрядчика</th><td>{{ act.contractor_representative }}</td></tr>
+</table>
+<h5>Оприходованные ценности</h5>
+<div class="overflow"><table class="highlight striped">
+  <thead><tr><th>№</th><th>Наименование</th><th>Ед.</th><th class="right-align">Получено</th><th class="right-align">Годность, %</th><th class="right-align">Оприходовано</th><th class="right-align">Цена</th><th class="right-align">Сумма, руб.</th></tr></thead>
+  <tbody>
+  {% for row in act.items.all %}
+    <tr><td>{{ forloop.counter }}</td><td>{{ row.name_snapshot }}{% if row.grade %}, {{ row.grade }}{% endif %}</td><td>{{ row.unit_snapshot }}</td>
+      <td class="right-align">{{ row.quantity|floatformat:"-3" }}</td><td class="right-align">{{ row.fitness|floatformat:"-2" }}</td><td class="right-align">{{ row.accepted_quantity|floatformat:"-3" }}</td>
+      <td class="right-align">{{ row.price|floatformat:"2g" }}</td><td class="right-align">{{ row.total|floatformat:"2g" }}</td></tr>
+  {% endfor %}
+    <tr><th colspan="7">Итого</th><th class="right-align">{{ totals.total|floatformat:"2g" }}</th></tr>
+  </tbody>
+</table></div>
+<p>Сумма прописью: <b>{{ totals.in_words }}</b></p>
+{% endblock %}

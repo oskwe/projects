@@ -1,0 +1,56 @@
+{% extends 'base.html' %}{% load static versioned_static %}
+{% block title %}{% if act.pk %}Редактирование акта № {{ act.number }}{% else %}Создание акта оприходования{% endif %}{% endblock %}
+{% block content %}
+<form method="post" id="receipt-form" novalidate>{% csrf_token %}
+<div class="row valign-wrapper not-print">
+  <h4 class="col s10">{% if act.pk %}Редактирование акта № {{ act.number }}{% elif copy_from %}Новый акт (копия){% else %}Создание акта оприходования{% endif %}</h4>
+  <div class="col s2 right-align">
+    <button type="submit" name="action" value="print" class="btn-floating z-depth-0 waves-effect waves-light green" aria-label="Сохранить и открыть печатную форму" title="Сохранить и открыть печатную форму"><i class="material-icons">print</i></button>
+  </div>
+</div>
+<p class="grey-text">Акт об оприходовании материальных ценностей, полученных при разборке и демонтаже зданий и сооружений (по форме № М-35). Поля со звёздочкой обязательны.</p>
+
+<h5>Реквизиты акта</h5>
+<div class="form-grid">
+  {% include 'receipts/field.html' with field=form.number %}
+  {% include 'receipts/field.html' with field=form.date %}
+  {% include 'receipts/field.html' with field=form.approval_date %}
+  {% include 'receipts/field.html' with field=form.organization %}
+  {% include 'receipts/field.html' with field=form.department %}
+  {% include 'receipts/field.html' with field=form.contractor %}
+  {% include 'receipts/field.html' with field=form.object_name wide=True %}
+  {% include 'receipts/field.html' with field=form.warehouse %}
+  {% include 'receipts/field.html' with field=form.basis %}
+  {% include 'receipts/field.html' with field=form.activity %}
+  {% include 'receipts/field.html' with field=form.operation_code %}
+  {% include 'receipts/field.html' with field=form.okud %}
+  {% include 'receipts/field.html' with field=form.note wide=True %}
+</div>
+
+<h5>Комиссия и подписи</h5>
+<div class="form-grid">
+  {% include 'receipts/field.html' with field=form.chairman %}
+  {% include 'receipts/field.html' with field=form.member_first %}
+  {% include 'receipts/field.html' with field=form.member_second %}
+  {% include 'receipts/field.html' with field=form.storekeeper %}
+  {% include 'receipts/field.html' with field=form.contractor_representative wide=True %}
+</div>
+
+<h5>Оприходуемые материальные ценности</h5>
+{{ formset.management_form }}{{ formset.non_form_errors }}
+<div id="work-rows">{% for form in formset %}{% include 'receipts/row_form.html' %}{% endfor %}</div>
+<button type="button" class="btn green" id="add-row"><i class="material-icons left">add</i>Добавить позицию</button>
+<template id="empty-row">{% with form=formset.empty_form %}{% include 'receipts/row_form.html' %}{% endwith %}</template>
+
+<div class="card-panel act-summary">Итого по акту: <b id="grand-total">0,00</b> руб. · позиций: <b id="grand-count">0</b></div>
+
+<div class="document-actions">
+  <button type="submit" class="btn blue"><i class="material-icons left">{% if act.pk %}save{% else %}add{% endif %}</i>{% if act.pk %}Сохранить{% else %}Создать{% endif %}</button>
+  <button type="submit" name="action" value="print" class="btn green"><i class="material-icons left">print</i>Сохранить и печать</button>
+  {% if act.pk %}<a href="{% url 'receipts:detail' act.pk %}" class="btn orange"><i class="material-icons left">visibility</i>Просмотр</a>{% endif %}
+  <a href="{% url 'receipts:list' %}" class="btn grey"><i class="material-icons left">cancel</i>Отмена</a>
+</div>
+</form>
+{{ catalog|json_script:"catalog-data" }}
+{% endblock %}
+{% block scripts %}<script src="{% versioned_static 'js/receipt-form.js' %}"></script>{% endblock %}

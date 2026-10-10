@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8"/>
+    <title>Lab 5 - Task 5: Калькулятор (Полный функционал ЛР4)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <style>
+        body { 
+            font-family: sans-serif; 
+            padding: 20px; 
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+
+        .calculator {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            width: 340px; /* Чуть шире для новых кнопок */
+        }
+
+        h2 { text-align: center; margin-top: 0; color: #333; font-size: 1.2rem; }
+
+        /* Экран */
+        #display {
+            width: 100%;
+            height: 60px;
+            font-size: 28px;
+            text-align: right;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            box-sizing: border-box;
+            background-color: #fafafa;
+            color: #333;
+            font-family: monospace;
+        }
+
+        /* Сетка кнопок */
+        .buttons-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+
+        button {
+            padding: 15px;
+            font-size: 18px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+            background-color: #e0e0e0;
+            color: #333;
+            font-weight: bold;
+        }
+
+        button:hover { background-color: #d0d0d0; }
+        button:active { transform: scale(0.95); }
+
+        /* Цвета кнопок */
+        .btn-op { background-color: #ff9f43; color: white; } /* Операции + - * / */
+        .btn-op:hover { background-color: #f39c12; }
+
+        .btn-func { background-color: #9b59b6; color: white; } /* Функции √ log */
+        .btn-func:hover { background-color: #8e44ad; }
+
+        .btn-eq { background-color: #2ecc71; color: white; grid-column: span 2; }
+        .btn-eq:hover { background-color: #27ae60; }
+
+        .btn-clear { background-color: #e74c3c; color: white; grid-column: span 2; }
+        .btn-clear:hover { background-color: #c0392b; }
+
+        .btn-zero { grid-column: span 2; }
+
+        /* Опции */
+        .options {
+            margin-top: 15px;
+            font-size: 14px;
+            text-align: left;
+        }
+        .options label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<div class="calculator">
+    <h2>Калькулятор</h2>
+    
+    <!-- Экран -->
+    <input type="text" id="display" readonly value="0">
+
+    <div class="buttons-grid">
+        <!-- Ряд 1: Очистка и Функции (√, log) -->
+        <button class="btn-clear" onclick="clearDisplay()">C</button>
+        <button class="btn-func" onclick="applyFunction('sqrt')">√</button>
+        <button class="btn-func" onclick="applyFunction('log')">log</button>
+        <button class="btn-op" onclick="appendOperator('/')">/</button>
+
+        <!-- Ряд 2: Цифры 7-9 и умножение -->
+        <button onclick="appendNumber('7')">7</button>
+        <button onclick="appendNumber('8')">8</button>
+        <button onclick="appendNumber('9')">9</button>
+        <button class="btn-op" onclick="appendOperator('*')">×</button>
+
+        <!-- Ряд 3: Цифры 4-6 и вычитание -->
+        <button onclick="appendNumber('4')">4</button>
+        <button onclick="appendNumber('5')">5</button>
+        <button onclick="appendNumber('6')">6</button>
+        <button class="btn-op" onclick="appendOperator('-')">-</button>
+
+        <!-- Ряд 4: Цифры 1-3 и сложение -->
+        <button onclick="appendNumber('1')">1</button>
+        <button onclick="appendNumber('2')">2</button>
+        <button onclick="appendNumber('3')">3</button>
+        <button class="btn-op" onclick="appendOperator('+')">+</button>
+
+        <!-- Ряд 5: Ноль, точка, равно -->
+        <button class="btn-zero" onclick="appendNumber('0')">0</button>
+        <button onclick="appendNumber('.')">.</button>
+        <button class="btn-eq" onclick="calculateResult()">=</button>
+    </div>
+
+    <div class="options">
+        <label>
+            <input type="checkbox" id="roundCheck"> Округление до 3 знаков
+        </label>
+    </div>
+</div>
+
+<script>
+'use strict';
+
+// --- ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ (из ЛР4) ---
+
+const $ = (id) => document.getElementById(id);
+
+const readNumber = (str) => {
+    const raw = String(str).trim();
+    return raw === '' || raw === '.' ? NaN : Number(raw);
+};
+
+// Функция вычисления (взята из ЛР4, включает sqrt и log)
+function calc(a, op, b, base) {
+    switch(op) {
+        case '+': return a + b;
+        case '-': return a - b;
+        case '*': return a * b;
+        case '/': return b === 0 ? NaN : a / b;
+        
+        // Унарные операции (применяются к 'a', 'b' игнорируется)
+        case 'sqrt':
+            if (a < 0) return NaN; 
+            return Math.sqrt(a);
+        case 'log':
+            // В ЛР4 логарифм требовал основание. 
+            // Для кнопочного интерфейса сделаем по умолчанию log10 (как на обычных калькуляторах),
+            // либо можно реализовать ввод основания через отдельное модальное окно, но это усложнит интерфейс.
+            // В контексте "простого интерфейса" обычно подразумевается lg (log10) или ln (logE).
+            // Реализуем как log10 (десятичный логарифм), так как это стандарт для инженерных кнопок "log".
+            if (a <= 0) return NaN;
+            return Math.log10(a); 
+            
+        default: return NaN;
+    }
+}
+
+// --- ЛОГИКА КАЛЬКУЛЯТОРА ---
+
+const display = $('display');
+const roundCheck = $('roundCheck');
+
+let currentInput = '0';      
+let previousInput = null;    
+let operator = null;         
+let shouldResetScreen = false; 
+
+function updateDisplay() {
+    display.value = currentInput;
+}
+
+// 1. Ввод цифры
+function appendNumber(num) {
+    if (shouldResetScreen) {
+        currentInput = num;
+        shouldResetScreen = false;
+    } else {
+        if (num === '.' && currentInput.includes('.')) return; 
+        if (currentInput === '0' && num !== '.') {
+            currentInput = num;
+        } else {
+            currentInput += num;
+        }
+    }
+    updateDisplay();
+}
+
+// 2. Ввод бинарной операции (+, -, *, /)
+function appendOperator(op) {
+    if (operator && !shouldResetScreen) {
+        calculateResult(true); 
+    }
+    previousInput = readNumber(currentInput);
+    operator = op;
+    shouldResetScreen = true; 
+}
+
+// 3. Применение унарной функции (√, log)
+function applyFunction(funcName) {
+    const currentVal = readNumber(currentInput);
+    
+    if (Number.isNaN(currentVal)) {
+        currentInput = 'Ошибка';
+        shouldResetScreen = true;
+        updateDisplay();
+        return;
+    }
+
+    // Вычисляем сразу
+    let res = calc(currentVal, funcName, null, null);
+
+    if (Number.isNaN(res) || !isFinite(res)) {
+        currentInput = 'Ошибка';
+    } else {
+        if (roundCheck.checked) {
+            res = Math.round(res * 1000) / 1000;
+        }
+        currentInput = String(res);
+    }
+    
+    shouldResetScreen = true; // Результат получен, следующий ввод начнет новое число
+    updateDisplay();
+}
+
+// 4. Вычисление результата (=)
+function calculateResult(isIntermediate = false) {
+    if (!operator || previousInput === null) return;
+
+    const b = readNumber(currentInput);
+    const a = previousInput;
+    
+    let res = calc(a, operator, b, null);
+
+    if (Number.isNaN(res) || !isFinite(res)) {
+        currentInput = 'Ошибка';
+        operator = null;
+        previousInput = null;
+        shouldResetScreen = true;
+        updateDisplay();
+        return;
+    }
+
+    if (roundCheck.checked) {
+        res = Math.round(res * 1000) / 1000;
+    }
+
+    currentInput = String(res);
+    
+    if (!isIntermediate) {
+        operator = null;
+        previousInput = null;
+        shouldResetScreen = true;
+    } else {
+        previousInput = res;
+        shouldResetScreen = true; 
+    }
+    
+    updateDisplay();
+}
+
+// 5. Очистка
+function clearDisplay() {
+    currentInput = '0';
+    previousInput = null;
+    operator = null;
+    shouldResetScreen = false;
+    updateDisplay();
+}
+
+// Поддержка клавиатуры
+document.addEventListener('keydown', (event) => {
+    const key = event.key;
+    if (/[0-9]/.test(key)) appendNumber(key);
+    else if (key === '.') appendNumber('.');
+    else if (['+', '-', '*', '/'].includes(key)) appendOperator(key);
+    else if (key === 'Enter' || key === '=') { event.preventDefault(); calculateResult(); }
+    else if (key === 'Backspace') {
+        if (shouldResetScreen || currentInput === 'Ошибка') clearDisplay();
+        else {
+            currentInput = currentInput.slice(0, -1);
+            if (currentInput === '') currentInput = '0';
+            updateDisplay();
+        }
+    }
+    else if (key === 'Escape' || key.toLowerCase() === 'c') clearDisplay();
+    // Добавим горячие клавиши для функций
+    else if (key === 'r') applyFunction('sqrt'); // r от root
+    else if (key === 'l') applyFunction('log');  // l от log
+});
+
+</script>
+
+</body>
+</html>

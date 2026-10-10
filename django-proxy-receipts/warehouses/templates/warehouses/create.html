@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block title %}Добавить склад{% endblock %}
+
+{% block content %}
+<h4>Добавить склад</h4>
+<form method="post">
+  {% csrf_token %}
+  <div class="input-field">{{ form.name }}<label for="{{ form.name.id_for_label }}">Название склада</label>{{ form.name.errors }}</div>
+  <div class="input-field">{{ form.address }}<label for="{{ form.address.id_for_label }}">Адрес</label>{{ form.address.errors }}</div>
+  <div class="input-field">{{ form.storekeeper }}<label>Кладовщик (материально ответственное лицо)</label>{{ form.storekeeper.errors }}</div>
+  <button class="btn green">Добавить</button>
+</form>
+{% endblock %}

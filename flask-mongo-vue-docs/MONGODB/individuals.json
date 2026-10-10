@@ -1,0 +1,22 @@
+[{
+  "_id": {
+    "$oid": "6829e8610998da7a7a70c0a9"
+  },
+  "lastname": "Иванов",
+  "firstname": "Иван",
+  "patronymic": "Иванович",
+  "position": {
+    "$oid": "6829e7a30998da7a7a70c0a6"
+  }
+},
+{
+  "_id": {
+    "$oid": "6829e8610998da7a7a70c0aa"
+  },
+  "lastname": "Петров",
+  "firstname": "Петр",
+  "patronymic": "Петрович",
+  "position": {
+    "$oid": "6829e7a30998da7a7a70c0a8"
+  }
+}]

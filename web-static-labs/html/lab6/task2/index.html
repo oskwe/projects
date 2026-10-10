@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Lab 6 - Task 2: Cookies с отказом</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            font-family: sans-serif;
+            max-width: 500px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        h2 { text-align: center; color: #333; }
+
+        .form-group { margin-bottom: 15px; }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        button {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-save {
+            background-color: #28a745;
+            color: white;
+        }
+        .btn-save:hover { background-color: #218838; }
+
+        .btn-forget {
+            background-color: #dc3545;
+            color: white;
+        }
+        .btn-forget:hover { background-color: #c82333; }
+
+        /* Класс для скрытия элементов */
+        .hidden {
+            display: none !important;
+        }
+
+        .status-msg {
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #e9ecef;
+            border-radius: 4px;
+            text-align: center;
+            color: #333;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>Управление именем (Cookies)</h2>
+
+    <div class="form-group">
+        <label for="userName">Введите ваше имя:</label>
+        <input type="text" id="userName" placeholder="Например, Иван">
+    </div>
+
+    <div class="buttons">
+        <!-- Кнопка сохранения (видна, если cookie нет) -->
+        <button id="saveBtn" class="btn-save">Сохранить имя</button>
+        
+        <!-- Кнопка отказа/удаления (видна, если cookie есть) -->
+        <button id="forgetBtn" class="btn-forget hidden">Удалить cookie</button>
+    </div>
+
+    <div id="statusMsg" class="status-msg hidden"></div>
+
+    <script>
+        "use strict";
+
+        const input = document.getElementById('userName');
+        const saveBtn = document.getElementById('saveBtn');
+        const forgetBtn = document.getElementById('forgetBtn');
+        const statusMsg = document.getElementById('statusMsg');
+
+        // --- Функции работы с Cookie ---
+
+        // Установка cookie
+        function setCookie(name, value, days) {
+            let expires = "";
+            if (days) {
+                const date = new Date();
+                date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+                expires = "; expires=" + date.toUTCString();
+            }
+            // Кодируем значение, чтобы спецсимволы не ломали строку
+            document.cookie = name + "=" + encodeURIComponent(value) + expires + "; path=/";
+        }
+
+        // Получение cookie
+        function getCookie(name) {
+            const nameEQ = name + "=";
+            const ca = document.cookie.split(';');
+            for (let i = 0; i < ca.length; i++) {
+                let c = ca[i];
+                while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+                if (c.indexOf(nameEQ) === 0) {
+                    return decodeURIComponent(c.substring(nameEQ.length, c.length));
+                }
+            }
+            return null;
+        }
+
+        // Удаление cookie (установка даты в прошлое)
+        function deleteCookie(name) {
+            document.cookie = name + "=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+        }
+
+        // --- Логика интерфейса ---
+
+        function updateUI() {
+            const savedName = getCookie('userName');
+
+            if (savedName) {
+                // Если cookie есть
+                input.value = savedName;
+                input.disabled = true; // Блокируем ввод, так как имя уже сохранено
+                saveBtn.classList.add('hidden');
+                forgetBtn.classList.remove('hidden');
+                
+                statusMsg.textContent = `Привет, ${savedName}! Ваше имя сохранено.`;
+                statusMsg.classList.remove('hidden');
+                statusMsg.style.color = '#28a745';
+            } else {
+                // Если cookie нет
+                input.value = '';
+                input.disabled = false;
+                saveBtn.classList.remove('hidden');
+                forgetBtn.classList.add('hidden');
+                
+                statusMsg.textContent = 'Имя не сохранено. Введите имя и нажмите "Сохранить".';
+                statusMsg.classList.remove('hidden');
+                statusMsg.style.color = '#666';
+            }
+        }
+
+        // Обработчик кнопки "Сохранить"
+        saveBtn.addEventListener('click', () => {
+            const name = input.value.trim();
+            if (!name) {
+                alert('Пожалуйста, введите имя!');
+                return;
+            }
+            // Сохраняем на 30 дней
+            setCookie('userName', name, 30);
+            updateUI();
+        });
+
+        // Обработчик кнопки "Забыть меня" (Отказ от хранения)
+        forgetBtn.addEventListener('click', () => {
+            if (confirm('Вы уверены, что хотите удалить сохраненное имя?')) {
+                deleteCookie('userName');
+                updateUI();
+            }
+        });
+
+        // Инициализация при загрузке страницы
+        window.addEventListener('DOMContentLoaded', updateUI);
+
+    </script>
+</body>
+</html>

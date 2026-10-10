@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Lab 5 - Task 8: HTML Валидация</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .form-container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        h2 { text-align: center; color: #333; margin-bottom: 20px; }
+
+        .form-group { margin-bottom: 15px; }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+            font-size: 14px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+            box-sizing: border-box; /* Чтобы padding не увеличивал ширину */
+            transition: border-color 0.3s;
+        }
+
+        /* --- HTML5 ВАЛИДАЦИЯ ЧЕРЕЗ CSS --- */
+        
+        /* Если поле невалидно и имеет фокус (или было тронуто), красим в красный */
+        input:invalid, select:invalid {
+            border-color: #dc3545; /* Красный */
+        }
+
+        /* Если поле валидно, красим в зеленый (опционально, можно убрать) */
+        input:valid, select:valid {
+            border-color: #28a745; /* Зеленый */
+        }
+
+        /* Убираем зеленую рамку у пустых обязательных полей, чтобы не пугать пользователя сразу */
+        input:placeholder-shown:invalid, 
+        select:invalid[value=""] {
+             border-color: #ccc; /* Возвращаем серый, пока пользователь не начал ввод */
+        }
+        
+        /* Но если поле обязательное и уже тронуто (фокус был), то показываем ошибку */
+        input:focus:invalid, select:focus:invalid {
+            border-color: #dc3545;
+            outline: none;
+            box-shadow: 0 0 5px rgba(220, 53, 69, 0.3);
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background 0.2s;
+        }
+
+        button:hover { background-color: #0056b3; }
+
+        .hint {
+            font-size: 12px;
+            color: #777;
+            margin-top: 4px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="form-container">
+    <h2>Регистрация</h2>
+    
+    <!-- Форма без action, чтобы не уходила со страницы при тесте -->
+    <form action="#" method="POST">
+        
+        <!-- Логин: обязателен, 5-20 символов -->
+        <div class="form-group">
+            <label for="login">Логин *</label>
+            <input 
+                type="text" 
+                id="login" 
+                name="login" 
+                required 
+                minlength="5" 
+                maxlength="20"
+                placeholder="От 5 до 20 символов"
+            >
+            <div class="hint">Минимум 5, максимум 20 символов.</div>
+        </div>
+
+        <!-- Пароль: обязателен, 5-12 символов -->
+        <div class="form-group">
+            <label for="password">Пароль *</label>
+            <input 
+                type="password" 
+                id="password" 
+                name="password" 
+                required 
+                minlength="5" 
+                maxlength="12"
+                placeholder="От 5 до 12 символов"
+            >
+            <div class="hint">Минимум 5, максимум 12 символов.</div>
+        </div>
+
+        <!-- Возраст: необязателен, 14-120 -->
+        <div class="form-group">
+            <label for="age">Возраст</label>
+            <input 
+                type="number" 
+                id="age" 
+                name="age" 
+                min="14" 
+                max="120" 
+                step="1"
+                placeholder="Например: 25"
+            >
+            <div class="hint">Диапазон: 14–120 лет (необязательно).</div>
+        </div>
+
+        <!-- Город: обязателен, нельзя выбрать "Не выбран" -->
+        <div class="form-group">
+            <label for="city">Город *</label>
+            <select id="city" name="city" required>
+                <!-- Пустое value обязательно для работы required на select -->
+                <option value="" disabled selected>Не выбран</option>
+                <option value="moscow">Москва</option>
+                <option value="spb">Санкт-Петербург</option>
+                <option value="kazan">Казань</option>
+                <option value="novosibirsk">Новосибирск</option>
+                <option value="ekb">Екатеринбург</option>
+            </select>
+        </div>
+
+        <button type="submit">Зарегистрироваться</button>
+    </form>
+</div>
+
+</body>
+</html>

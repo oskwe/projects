@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Задание 3: URL Rewriting</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; text-align: center; background-color: #f4f4f9; }
+        h1 { color: #333; }
+        p { margin-bottom: 30px; color: #555; max-width: 600px; margin-left: auto; margin-right: auto; line-height: 1.6; }
+        .links { display: flex; flex-direction: column; gap: 15px; align-items: center; }
+        a {
+            display: inline-block;
+            padding: 12px 25px;
+            background-color: olivedrab;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: background 0.3s;
+            min-width: 200px;
+        }
+        a:hover { background-color: goldenrod; }
+        .note {
+            margin-top: 40px;
+            font-size: 0.9rem;
+            color: #777;
+            background: #fff;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        code { background: #eee; padding: 2px 5px; border-radius: 3px; color: #c7254e; }
+    </style>
+</head>
+<body>
+
+    <h1>Лабораторная 3, Задание 3</h1>
+    <p>Нажмите на ссылку товара.</p>
+
+    <div class="links">
+        <!-- Ссылки ведут на путь, которое перехватывает nginx -->
+        <a href="/lab3/task3/items/1">Товар #1</a>
+        <a href="/lab3/task3/items/42">Товар #42</a>
+        <a href="/lab3/task3/items/123">Товар #123</a>
+        <a href="/lab3/task3/items/999">Товар #999</a>
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Lab 5 - Task 2: ToDo List (Fixed)</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+
+        h1 { text-align: center; }
+
+        /* Область ввода */
+        .input-area {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+            flex-direction: column;
+        }
+
+        textarea {
+            width: 100%;
+            height: 80px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            resize: vertical;
+            font-family: inherit;
+            box-sizing: border-box; /* Чтобы padding не ломал ширину */
+        }
+
+        button.add-btn {
+            align-self: flex-end;
+            padding: 10px 20px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button.add-btn:hover { background-color: #218838; }
+
+        /* Область списка задач */
+        #taskList {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        /* Карточка задачи */
+        .task-item {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+            position: relative;
+            transition: all 0.2s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .task-content {
+            flex-grow: 1;
+            margin-right: 15px;
+            word-break: break-word; /* Чтобы длинный текст переносился */
+        }
+
+        .task-date {
+            font-size: 0.85em;
+            color: #666;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        .task-text {
+            font-size: 1.1em;
+            line-height: 1.4;
+        }
+
+        /* Состояние наведения (Hover) */
+        .task-item:hover {
+            background-color: #e3f2fd; /* Светло-голубой фон */
+            border-color: #2196f3;     /* Синяя рамка */
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        /* Кнопки действий */
+        .task-actions {
+            display: none; /* Скрыты по умолчанию */
+            gap: 5px;
+            flex-shrink: 0;
+        }
+
+        /* Показываем кнопки при наведении на задачу */
+        .task-item:hover .task-actions {
+            display: flex;
+        }
+
+        .action-btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            color: white;
+        }
+
+        .btn-copy { background-color: #17a2b8; }
+        .btn-copy:hover { background-color: #138496; }
+
+        .btn-delete { background-color: #dc3545; }
+        .btn-delete:hover { background-color: #c82333; }
+
+    </style>
+</head>
+<body>
+
+    <h1>Список задач (ToDo)</h1>
+
+    <!-- Область ввода -->
+    <div class="input-area">
+        <textarea id="taskInput" placeholder="Введите текст новой задачи..."></textarea>
+        <button id="addBtn" class="add-btn">Добавить задачу</button>
+    </div>
+
+    <!-- Область списка -->
+    <div id="taskList">
+        <!-- Сюда будут добавляться задачи -->
+    </div>
+
+    <script>
+        "use strict";
+
+        const taskInput = document.getElementById('taskInput');
+        const addBtn = document.getElementById('addBtn');
+        const taskList = document.getElementById('taskList');
+
+        // --- ТВОЯ ФУНКЦИЯ ДЛЯ КОПИРОВАНИЯ ---
+        function copyToClipboard(text) {
+            // Создаём временное поле
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            
+            // Важно: делаем поле невидимым, но добавляем в DOM, иначе select() не сработает корректно в некоторых браузерах
+            textarea.style.position = 'fixed'; 
+            textarea.style.left = '-9999px';
+            textarea.style.top = '0';
+            
+            document.body.appendChild(textarea);
+            textarea.select();
+            
+            try {
+                const successful = document.execCommand("copy");
+                if (!successful) {
+                    alert('Не удалось скопировать текст (команда не поддерживается).');
+                }
+            } catch (err) {
+                console.error('Ошибка копирования: ', err);
+                alert('Не удалось скопировать текст (ошибка execCommand).');
+            }
+            
+            document.body.removeChild(textarea);
+        }
+        // ------------------------------------
+
+        // Функция добавления задачи
+        function addTask() {
+            const text = taskInput.value.trim();
+            
+            if (text === "") {
+                alert("Пожалуйста, введите текст задачи!");
+                return;
+            }
+
+            // Получаем текущую дату и время
+            const now = new Date();
+            const dateString = now.toLocaleDateString('ru-RU');
+            const timeString = now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+            const dateTimeStr = `${dateString} ${timeString}`;
+
+            // Создаем элемент задачи
+            const taskItem = document.createElement('div');
+            taskItem.className = 'task-item';
+
+            // Внутренняя структура задачи
+            // Используем escapeHtml для безопасности
+            taskItem.innerHTML = `
+                <div class="task-content">
+                    <span class="task-date">${dateTimeStr}</span>
+                    <div class="task-text">${escapeHtml(text)}</div>
+                </div>
+                <div class="task-actions">
+                    <button class="action-btn btn-copy" type="button">Копировать</button>
+                    <button class="action-btn btn-delete" type="button">Удалить</button>
+                </div>
+            `;
+
+            // Добавляем задачу в НАЧАЛО списка
+            taskList.prepend(taskItem);
+
+            // Очищаем поле ввода
+            taskInput.value = "";
+            taskInput.focus();
+        }
+
+        // Обработчик клика на кнопку "Добавить"
+        addBtn.addEventListener('click', addTask);
+
+        // Добавление по Ctrl+Enter
+        taskInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+                addTask();
+            }
+        });
+
+        // Делегирование событий для кнопок внутри списка
+        taskList.addEventListener('click', (event) => {
+            const target = event.target;
+
+            // Если кликнули на кнопку "Удалить"
+            if (target.classList.contains('btn-delete')) {
+                const taskItem = target.closest('.task-item');
+                if (taskItem) {
+                    taskItem.remove();
+                }
+            }
+
+            // Если кликнули на кнопку "Копировать"
+            if (target.classList.contains('btn-copy')) {
+                const taskItem = target.closest('.task-item');
+                if (taskItem) {
+                    const textToCopy = taskItem.querySelector('.task-text').textContent;
+                    
+                    // Вызываем твою функцию
+                    copyToClipboard(textToCopy);
+                    
+                    // Визуальное подтверждение
+                    const originalText = target.textContent;
+                    target.textContent = "Скопировано!";
+                    setTimeout(() => {
+                        target.textContent = originalText;
+                    }, 1500);
+                }
+            }
+        });
+
+        // Функция защиты от XSS
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+    </script>
+</body>
+</html>

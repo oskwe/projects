@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Lab 6 - Task 1: Случайная кошка</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            font-family: sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+            background-color: #f4f4f4;
+            margin: 0;
+        }
+
+        h1 { color: #333; margin-bottom: 20px; font-size: 1.5rem; text-align: center; }
+
+        button {
+            padding: 12px 24px;
+            font-size: 16px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            margin-bottom: 20px;
+        }
+
+        button:hover { background-color: #0056b3; }
+        button:disabled { background-color: #ccc; cursor: not-allowed; }
+
+        .status {
+            font-size: 16px;
+            margin-bottom: 15px;
+            min-height: 24px;
+            text-align: center;
+            font-weight: bold;
+        }
+        .status.loading { color: #007bff; }
+        .status.error { color: #dc3545; }
+        .status.success { color: #28a745; }
+
+        .image-container {
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            max-width: 100%;
+            min-width: 300px;
+            min-height: 300px; /* Чтобы блок не схлопывался до загрузки */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 4px;
+            display: block;
+        }
+        
+        /* Плейсхолдер, если картинки нет */
+        .placeholder {
+            color: #aaa;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Кошачий генератор</h1>
+
+    <button id="loadBtn">Показать кошару</button>
+    
+    <div id="status" class="status"></div>
+
+    <div class="image-container">
+        <span id="placeholderText" class="placeholder">Здесь появится кошак</span>
+        <img id="catImage" src="" alt="Случайная кошка" style="display: none;">
+    </div>
+
+    <script>
+        "use strict";
+
+        const loadBtn = document.getElementById('loadBtn');
+        const catImage = document.getElementById('catImage');
+        const statusEl = document.getElementById('status');
+        const placeholderText = document.getElementById('placeholderText');
+
+        // URL API
+        const API_URL = 'https://api.thecatapi.com/v1/images/search';
+
+        async function loadCat() {
+            // Сброс состояния
+            statusEl.textContent = 'Загружается... (максимум 7 сек)';
+            statusEl.className = 'status loading';
+            loadBtn.disabled = true;
+            catImage.style.display = 'none';
+            placeholderText.style.display = 'block';
+
+            // Создаем контроллер для отмены запроса
+            const controller = new AbortController();
+            const signal = controller.signal;
+
+            // Таймаут: если за 7 секунд нет ответа — отменяем запрос
+            const timeoutId = setTimeout(() => {
+                controller.abort();
+            }, 7000);
+
+            try {
+                // Выполняем запрос с сигналом отмены
+                const response = await fetch(API_URL, { signal });
+
+                // Проверка статуса HTTP (200-299)
+                if (!response.ok) {
+                    throw new Error(`Ошибка HTTP: ${response.status}`);
+                }
+
+                // Парсим JSON
+                const data = await response.json();
+
+                // API возвращает массив, берем первый элемент
+                if (data && data.length > 0 && data[0].url) {
+                    const imageUrl = data[0].url;
+                    
+                    // Создаем новый объект Image, чтобы дождаться реальной загрузки картинки браузером
+                    const imgLoader = new Image();
+                    imgLoader.src = imageUrl;
+                    
+                    imgLoader.onload = () => {
+                        catImage.src = imageUrl;
+                        catImage.style.display = 'block';
+                        placeholderText.style.display = 'none';
+                        statusEl.textContent = 'Котик загружен успешно!';
+                        statusEl.className = 'status success';
+                        loadBtn.disabled = false;
+                    };
+
+                    imgLoader.onerror = () => {
+                        throw new Error('Не удалось загрузить изображение с полученного URL');
+                    };
+
+                } else {
+                    throw new Error('Пустой ответ от API');
+                }
+
+            } catch (error) {
+                // Обработка ошибок
+                if (error.name === 'AbortError') {
+                    statusEl.textContent = 'Запрос отменён: время ожидания истекло.';
+                } else {
+                    // Задание требует именно эту фразу при ошибке сети
+                    statusEl.textContent = 'Не удалось загрузить картинку.'; 
+                    console.error('Ошибка:', error.message);
+                }
+                statusEl.className = 'status error';
+                loadBtn.disabled = false;
+            } finally {
+                // Очищаем таймер в любом случае
+                clearTimeout(timeoutId);
+            }
+        }
+
+        // Навешиваем обработчик события
+        loadBtn.addEventListener('click', loadCat);
+
+    </script>
+</body>
+</html>

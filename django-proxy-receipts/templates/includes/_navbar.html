@@ -1,0 +1,22 @@
+<!-- templates/includes/_navbar.html -->
+<div class="navbar-fixed">
+  <nav class="blue navbar" aria-label="Основная навигация">
+    <div class="nav-wrapper top-navigation">
+      <button type="button" class="mobile-menu" aria-label="Открыть боковое меню"><i class="material-icons">menu</i></button>
+      <details class="nav-dropdown">
+        <summary>Справочники<i class="material-icons" aria-hidden="true">arrow_drop_down</i></summary>
+        <ul class="nav-dropdown-list">
+          <li><a href="{% url 'products:list' %}">Товары</a></li>
+          <li><a href="{% url 'employees:list' %}">Сотрудники</a></li>
+          <li><a href="{% url 'customers:list' %}">Контрагенты</a></li>
+          <li><a href="{% url 'organizations:list' %}">Организации</a></li>
+          <li><a href="{% url 'accounts:list' %}">Счета</a></li>
+          <li><a href="{% url 'departments:list' %}">Отделы</a></li>
+          <li><a href="{% url 'positions:list' %}">Должности</a></li>
+          <li><a href="{% url 'warehouses:list' %}">Склады</a></li>
+          <li><a href="{% url 'units:list' %}">Единицы измерения</a></li>
+        </ul>
+      </details>
+    </div>
+  </nav>
+</div>

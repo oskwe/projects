@@ -1,0 +1,18 @@
+/* Дополнения интерфейса акта оприходования; исходный styles.css методички не изменён. */
+.form-grid .span-2{grid-column:span 2}
+.receipt-row summary{display:flex;flex-wrap:wrap;align-items:baseline;gap:12px}
+.receipt-row .row-calc{font-size:14px;font-weight:normal}
+.receipt-row .row-delete{display:inline-block;margin:6px 0 4px}
+.act-summary{display:flex;justify-content:flex-end;gap:6px;font-size:17px;margin-top:22px}
+.journal-toolbar{display:flex;justify-content:space-between;align-items:center;gap:20px;margin-bottom:10px;flex-wrap:wrap}
+.journal-search{display:flex;align-items:center;gap:8px;flex:1;min-width:260px;max-width:640px}
+.journal-search .input-field{flex:1;margin:0}
+.nowrap{white-space:nowrap}
+th.right-align,td.right-align{text-align:right}
+@media(max-width:600px){.form-grid .span-2{grid-column:auto}.act-summary{justify-content:flex-start}}
+
+/* Боковое меню: заголовок «Документы» (ведёт к доверенностям) и два документа. */
+.sidenav .logo-container{padding:0}
+.sidenav li.logo-container>a.logo-link{display:block;height:64px;line-height:64px;padding:0 32px;font-size:24px;color:#fff;background:transparent}
+.sidenav li.logo-container>a.logo-link:hover{background:rgba(0,0,0,.1)}
+.sidenav li>a{height:auto;min-height:48px;line-height:1.35;padding-top:13px;padding-bottom:13px;white-space:normal;display:flex;align-items:center}

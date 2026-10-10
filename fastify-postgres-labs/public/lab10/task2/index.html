@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ЛР10. Задание 2</title>
+  <style>
+    :root {
+      --bg: #f4f6f8;
+      --panel: #fff;
+      --text: #1f2933;
+      --muted: #64748b;
+      --line: #d7dde5;
+      --blue: #1f5fbf;
+      --green: #137333;
+      --red: #b3261e;
+    }
+
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: Arial, sans-serif; color: var(--text); background: var(--bg); }
+    main { max-width: 1240px; margin: 0 auto; padding: 28px 18px 44px; }
+    a { color: var(--blue); }
+    h1 { margin: 16px 0 8px; font-size: 30px; }
+    h2 { margin: 0 0 14px; font-size: 22px; }
+    h3 { margin: 0 0 10px; font-size: 18px; }
+    p { margin: 0; }
+    button {
+      min-height: 40px;
+      padding: 0 14px;
+      border: 0;
+      border-radius: 6px;
+      background: var(--blue);
+      color: #fff;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    button.secondary { background: #5f6368; }
+    button.danger { background: var(--red); }
+    input, select {
+      min-height: 40px;
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid #c8d0dc;
+      border-radius: 6px;
+      background: #fff;
+      font: inherit;
+    }
+    label { display: grid; gap: 5px; color: var(--muted); font-size: 13px; font-weight: 700; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 11px 10px; border-bottom: 1px solid #e6ebf1; text-align: left; vertical-align: top; }
+    th { color: var(--muted); font-size: 13px; }
+    .lead { margin-bottom: 20px; color: var(--muted); line-height: 1.5; }
+    .panel { padding: 18px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); }
+    .section { margin-top: 18px; }
+    .filters { display: grid; grid-template-columns: repeat(7, minmax(120px, 1fr)); gap: 10px; align-items: end; }
+    .schedule-table { overflow-x: auto; margin-top: 14px; }
+    .schedule-table td:nth-child(5), .schedule-table td:nth-child(6) { min-width: 210px; }
+    .schedule-actions { display: flex; gap: 8px; }
+    .forms-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(320px, 420px); gap: 18px; align-items: start; }
+    .form-grid { display: grid; grid-template-columns: repeat(4, minmax(150px, 1fr)); gap: 10px; }
+    .directory-layout { display: grid; grid-template-columns: 320px minmax(0, 1fr); gap: 18px; align-items: start; }
+    .directory-form { display: grid; gap: 10px; }
+    .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+    .status { min-height: 20px; margin-top: 10px; font-weight: 700; }
+    .ok { color: var(--green); }
+    .error { color: var(--red); }
+    .empty { padding: 16px; color: var(--muted); }
+    .is-highlighted td { background: #fff7d6; }
+    .badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: #e8f0fe;
+      color: #174ea6;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .muted { color: var(--muted); }
+
+    @media (max-width: 1080px) {
+      .filters, .form-grid { grid-template-columns: repeat(2, minmax(160px, 1fr)); }
+      .forms-grid, .directory-layout { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 640px) {
+      main { padding: 22px 12px 34px; }
+      .filters, .form-grid { grid-template-columns: 1fr; }
+      th, td { padding: 9px 8px; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <a href="/lab10/">Назад к ЛР10</a>
+    <h1>Задание 2. Расписание занятий</h1>
+    <p class="lead">Группы: ПИ2401, ПИ2402, ПИ2403, ПИ2404. Данные справочников и расписания хранятся в PostgreSQL.</p>
+
+    <section class="panel">
+      <h2>Расписание</h2>
+      <div class="filters" id="filters"></div>
+      <div class="schedule-table">
+        <table>
+          <thead>
+            <tr>
+              <th>Неделя</th>
+              <th>День</th>
+              <th>Время</th>
+              <th>Группа</th>
+              <th>Дисциплина</th>
+              <th>Преподаватель</th>
+              <th>Аудитория</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="scheduleRows"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="forms-grid section">
+      <div class="panel">
+        <h2>Добавить или изменить пару</h2>
+        <div class="form-grid" id="scheduleForm"></div>
+        <div class="actions">
+          <button type="button" id="saveSchedule">Сохранить пару</button>
+          <button type="button" class="secondary" id="resetSchedule">Новая пара</button>
+        </div>
+        <p class="status" id="scheduleStatus"></p>
+      </div>
+
+      <div class="panel">
+        <h2>Справочник</h2>
+        <div class="directory-form">
+          <label>Раздел
+            <select id="directory"></select>
+          </label>
+          <div id="directoryForm" class="directory-form"></div>
+        </div>
+        <div class="actions">
+          <button type="button" id="saveDirectory">Сохранить запись</button>
+          <button type="button" class="secondary" id="resetDirectory">Новая запись</button>
+        </div>
+        <p class="status" id="directoryStatus"></p>
+      </div>
+    </section>
+
+    <section class="panel section">
+      <h2>Записи выбранного справочника</h2>
+      <div class="schedule-table">
+        <table>
+          <thead id="directoryHead"></thead>
+          <tbody id="directoryRows"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const API = '/api/lab10/task2';
+    const dayNames = ['', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
+    let refs = {};
+    let currentDirectoryId = null;
+    let currentScheduleId = null;
+
+    const directories = {
+      departments: { title: 'Кафедры', fields: [{ name: 'title', label: 'Название' }] },
+      positions: { title: 'Должности', fields: [{ name: 'title', label: 'Название' }] },
+      persons: {
+        title: 'Преподаватели ФИО',
+        fields: [
+          { name: 'full_name', label: 'ФИО' },
+          { name: 'email', label: 'Email', required: false },
+        ],
+      },
+      teachers: {
+        title: 'Преподаватели',
+        fields: [
+          { name: 'person_id', label: 'ФИО', source: 'persons', view: 'full_name' },
+          { name: 'department_id', label: 'Кафедра', source: 'departments', view: 'title' },
+          { name: 'position_id', label: 'Должность', source: 'positions', view: 'title' },
+        ],
+      },
+      groups: { title: 'Группы', fields: [{ name: 'title', label: 'Название' }] },
+      buildings: {
+        title: 'Корпуса',
+        fields: [
+          { name: 'title', label: 'Название' },
+          { name: 'address', label: 'Адрес', required: false },
+        ],
+      },
+      classrooms: {
+        title: 'Аудитории',
+        fields: [
+          { name: 'building_id', label: 'Корпус', source: 'buildings', view: 'title' },
+          { name: 'title', label: 'Номер' },
+          { name: 'capacity', label: 'Мест', type: 'number' },
+        ],
+      },
+      disciplines: { title: 'Дисциплины', fields: [{ name: 'title', label: 'Название' }] },
+      'lesson-types': { title: 'Типы занятий', fields: [{ name: 'title', label: 'Название' }] },
+    };
+
+    const scheduleFields = [
+      { name: 'week', label: 'Неделя', type: 'number', min: 1, max: 2 },
+      { name: 'day_of_week', label: 'День', options: dayNames.map((title, id) => ({ id, title })).filter((item) => item.id) },
+      { name: 'start_time', label: 'Время', type: 'time' },
+      { name: 'group_id', label: 'Группа', source: 'groups', view: 'title' },
+      { name: 'classroom_id', label: 'Аудитория', source: 'classrooms', view: 'title' },
+      { name: 'discipline_id', label: 'Дисциплина', source: 'disciplines', view: 'title' },
+      { name: 'teacher_id', label: 'Преподаватель', source: 'teachers', view: 'full_name' },
+      { name: 'lesson_type_id', label: 'Тип занятия', source: 'lessonTypes', view: 'title' },
+    ];
+
+    const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#039;',
+    }[char]));
+
+    async function requestJson(url, options = {}) {
+      const response = await fetch(url, options);
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(data.message || data.error || 'Ошибка запроса');
+      }
+      return data;
+    }
+
+    function setStatus(id, message, type = '') {
+      const node = document.getElementById(id);
+      node.className = `status ${type}`;
+      node.textContent = message;
+    }
+
+    function optionHtml(items = [], view = 'title', selected = '') {
+      return [
+        '<option value="">Выберите</option>',
+        ...items.map((item) => {
+          const text = item[view] || item.title || item.full_name;
+          return `<option value="${item.id}" ${String(item.id) === String(selected) ? 'selected' : ''}>${escapeHtml(text)}</option>`;
+        }),
+      ].join('');
+    }
+
+    function fieldHtml(field, value = '') {
+      if (field.options) {
+        return `<label>${field.label}<select name="${field.name}">${optionHtml(field.options, 'title', value)}</select></label>`;
+      }
+      if (field.source) {
+        return `<label>${field.label}<select name="${field.name}">${optionHtml(refs[field.source], field.view, value)}</select></label>`;
+      }
+      const type = field.type || 'text';
+      const min = field.min === undefined ? '' : ` min="${field.min}"`;
+      const max = field.max === undefined ? '' : ` max="${field.max}"`;
+      return `<label>${field.label}<input name="${field.name}" type="${type}" value="${escapeHtml(value)}"${min}${max}></label>`;
+    }
+
+    function readFields(containerId, fields) {
+      const root = document.getElementById(containerId);
+      const data = {};
+      fields.forEach((field) => {
+        const node = root.querySelector(`[name="${field.name}"]`);
+        const value = node.value;
+        if (!value && field.required !== false) {
+          throw new Error(`Заполните поле: ${field.label}`);
+        }
+        if (field.type === 'number' || field.name.endsWith('_id') || ['week', 'day_of_week', 'capacity'].includes(field.name)) {
+          data[field.name] = parseInt(value || '0', 10);
+        } else {
+          data[field.name] = value.trim();
+        }
+      });
+      return data;
+    }
+
+    async function loadRefs() {
+      refs = await requestJson(`${API}/refs`);
+    }
+
+    function renderDirectorySelect() {
+      document.getElementById('directory').innerHTML = Object.entries(directories)
+        .map(([key, item]) => `<option value="${key}">${item.title}</option>`)
+        .join('');
+    }
+
+    function renderDirectoryForm(values = {}) {
+      const key = document.getElementById('directory').value;
+      document.getElementById('directoryForm').innerHTML = directories[key].fields
+        .map((field) => fieldHtml(field, values[field.name] ?? ''))
+        .join('');
+    }
+
+    async function loadDirectory(highlightId = null) {
+      const key = document.getElementById('directory').value;
+      renderDirectoryForm();
+      const rows = await requestJson(`${API}/${key}`);
+      const columns = ['id', ...directories[key].fields.map((field) => field.name)];
+      document.getElementById('directoryHead').innerHTML = `<tr>${columns.map((column) => `<th>${column}</th>`).join('')}<th></th></tr>`;
+      document.getElementById('directoryRows').innerHTML = rows.length ? rows.map((row) => `
+        <tr class="${String(row.id) === String(highlightId) ? 'is-highlighted' : ''}">
+          ${columns.map((column) => `<td>${escapeHtml(row[column])}</td>`).join('')}
+          <td class="schedule-actions">
+            <button type="button" onclick='editDirectory(${JSON.stringify(row)})'>Изменить</button>
+            <button type="button" class="danger" onclick="deleteDirectory(${row.id})">Удалить</button>
+          </td>
+        </tr>
+      `).join('') : '<tr><td class="empty" colspan="9">Записей нет</td></tr>';
+    }
+
+    window.editDirectory = (row) => {
+      currentDirectoryId = row.id;
+      renderDirectoryForm(row);
+      setStatus('directoryStatus', `Редактируется запись #${row.id}`, '');
+    };
+
+    async function saveDirectory() {
+      const key = document.getElementById('directory').value;
+      const body = readFields('directoryForm', directories[key].fields);
+      const url = currentDirectoryId ? `${API}/${key}/${currentDirectoryId}` : `${API}/${key}`;
+      const method = currentDirectoryId ? 'PUT' : 'POST';
+      const saved = await requestJson(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      currentDirectoryId = null;
+      await loadRefs();
+      await loadDirectory(saved.id);
+      renderScheduleForm();
+      renderFilters();
+      await loadSchedule();
+      setStatus('directoryStatus', 'Сохранено', 'ok');
+    }
+
+    window.deleteDirectory = async (id) => {
+      const key = document.getElementById('directory').value;
+      try {
+        await requestJson(`${API}/${key}/${id}`, { method: 'DELETE' });
+        await loadRefs();
+        await loadDirectory();
+        await loadSchedule();
+        setStatus('directoryStatus', 'Удалено', 'ok');
+      } catch (error) {
+        setStatus('directoryStatus', error.message, 'error');
+      }
+    };
+
+    function renderScheduleForm(values = {}) {
+      document.getElementById('scheduleForm').innerHTML = scheduleFields
+        .map((field) => fieldHtml(field, values[field.name] ?? ''))
+        .join('');
+    }
+
+    function renderFilters() {
+      const pi2402 = refs.groups.find((group) => group.title === 'ПИ2402');
+      const filterFields = [
+        { name: 'week', label: 'Неделя', options: [{ id: 1, title: '1' }, { id: 2, title: '2' }] },
+        { name: 'day', label: 'День', options: dayNames.map((title, id) => ({ id, title })).filter((item) => item.id) },
+        { name: 'group', label: 'Группа', source: 'groups', view: 'title' },
+        { name: 'classroom', label: 'Аудитория', source: 'classrooms', view: 'title' },
+        { name: 'discipline', label: 'Дисциплина', source: 'disciplines', view: 'title' },
+        { name: 'teacher', label: 'Преподаватель', source: 'teachers', view: 'full_name' },
+        { name: 'lessonType', label: 'Тип занятия', source: 'lessonTypes', view: 'title' },
+      ];
+      document.getElementById('filters').innerHTML = filterFields.map((field) => {
+        const selected = field.name === 'group' && pi2402 ? pi2402.id : '';
+        return fieldHtml(field, selected);
+      }).join('')
+        + '<button type="button" onclick="loadSchedule()">Показать</button>'
+        + '<button type="button" class="secondary" onclick="clearFilters()">Сбросить</button>';
+    }
+
+    function buildScheduleQuery() {
+      const params = new URLSearchParams();
+      document.querySelectorAll('#filters [name]').forEach((node) => {
+        if (node.value) params.set(node.name, node.value);
+      });
+      return params.toString();
+    }
+
+    function showSavedScheduleInFilters(item) {
+      const map = {
+        week: item.week,
+        day: item.day_of_week,
+        group: item.group_id,
+        classroom: item.classroom_id,
+        discipline: item.discipline_id,
+        teacher: item.teacher_id,
+        lessonType: item.lesson_type_id,
+      };
+      Object.entries(map).forEach(([name, value]) => {
+        const node = document.querySelector(`#filters [name="${name}"]`);
+        if (node) node.value = value ?? '';
+      });
+    }
+
+    window.clearFilters = () => {
+      document.querySelectorAll('#filters [name]').forEach((node) => { node.value = ''; });
+      loadSchedule();
+    };
+
+    window.loadSchedule = async () => {
+      const query = buildScheduleQuery();
+      const rows = await requestJson(`${API}/schedule${query ? `?${query}` : ''}`);
+      document.getElementById('scheduleRows').innerHTML = rows.length ? rows.map((row) => `
+        <tr>
+          <td><span class="badge">${row.week}</span></td>
+          <td>${dayNames[row.day_of_week]}</td>
+          <td>${String(row.start_time).slice(0, 5)}</td>
+          <td>${escapeHtml(row.group_title)}</td>
+          <td><strong>${escapeHtml(row.discipline)}</strong><br><span class="muted">${escapeHtml(row.lesson_type)}</span></td>
+          <td>${escapeHtml(row.teacher)}</td>
+          <td>${escapeHtml(row.building)} ${escapeHtml(row.classroom)}</td>
+          <td class="schedule-actions">
+            <button type="button" onclick='editSchedule(${JSON.stringify(row)})'>Изменить</button>
+            <button type="button" class="danger" onclick="deleteSchedule(${row.id})">Удалить</button>
+          </td>
+        </tr>
+      `).join('') : '<tr><td class="empty" colspan="8">По выбранным фильтрам занятий нет</td></tr>';
+    };
+
+    window.editSchedule = (row) => {
+      currentScheduleId = row.id;
+      renderScheduleForm({
+        ...row,
+        start_time: String(row.start_time).slice(0, 5),
+      });
+      setStatus('scheduleStatus', `Редактируется пара #${row.id}`, '');
+    };
+
+    async function saveSchedule() {
+      const body = readFields('scheduleForm', scheduleFields);
+      const url = currentScheduleId ? `${API}/schedule/${currentScheduleId}` : `${API}/schedule`;
+      const method = currentScheduleId ? 'PUT' : 'POST';
+      const saved = await requestJson(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      currentScheduleId = null;
+      renderScheduleForm();
+      showSavedScheduleInFilters(saved);
+      await loadSchedule();
+      setStatus('scheduleStatus', 'Сохранено', 'ok');
+    }
+
+    window.deleteSchedule = async (id) => {
+      await requestJson(`${API}/schedule/${id}`, { method: 'DELETE' });
+      await loadSchedule();
+      setStatus('scheduleStatus', 'Удалено', 'ok');
+    };
+
+    document.getElementById('directory').addEventListener('change', () => {
+      currentDirectoryId = null;
+      loadDirectory().catch((error) => setStatus('directoryStatus', error.message, 'error'));
+    });
+    document.getElementById('saveDirectory').addEventListener('click', () => saveDirectory().catch((error) => setStatus('directoryStatus', error.message, 'error')));
+    document.getElementById('resetDirectory').addEventListener('click', () => {
+      currentDirectoryId = null;
+      renderDirectoryForm();
+      setStatus('directoryStatus', '');
+    });
+    document.getElementById('saveSchedule').addEventListener('click', () => saveSchedule().catch((error) => setStatus('scheduleStatus', error.message, 'error')));
+    document.getElementById('resetSchedule').addEventListener('click', () => {
+      currentScheduleId = null;
+      renderScheduleForm();
+      setStatus('scheduleStatus', '');
+    });
+
+    async function init() {
+      renderDirectorySelect();
+      await loadRefs();
+      await loadDirectory();
+      renderScheduleForm();
+      renderFilters();
+      await loadSchedule();
+    }
+
+    init().catch((error) => {
+      setStatus('scheduleStatus', error.message, 'error');
+      setStatus('directoryStatus', error.message, 'error');
+    });
+  </script>
+</body>
+</html>

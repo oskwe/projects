@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ЛР12. Задание 1</title>
+  <link rel="stylesheet" href="/lab12/style.css">
+</head>
+<body class="task1-page">
+  <header>
+    <h1>Задание 1. Проверка данных студента</h1>
+    <nav class="nav">
+      <a href="/lab12/">К ЛР12</a>
+      <a href="/lab12/task2/">Задание 2</a>
+      <a href="/lab12/task3/">Задание 3</a>
+    </nav>
+  </header>
+  <main>
+    <section class="panel hero-panel">
+      <div>
+        <h2>Двойная проверка данных</h2>
+        <p class="muted">Сначала форма проверяет регулярные выражения в браузере, затем выбранный endpoint повторяет проверку на сервере.</p>
+      </div>
+      <span class="chip accent">Мясников Никита Сергеевич · ПИ2402 · ПИ240215</span>
+    </section>
+
+    <section class="student-layout">
+      <section class="panel student-form-panel">
+        <p class="eyebrow">Данные студента</p>
+        <h2>Проверка</h2>
+        <form id="studentForm">
+          <div class="form-grid form-stack">
+            <div>
+              <label for="fullName">ФИО</label>
+              <input id="fullName" name="fullName" value="Мясников Никита Сергеевич" autocomplete="name">
+            </div>
+            <div>
+              <label for="recordBookNumber">Зачётка</label>
+              <input id="recordBookNumber" name="recordBookNumber" value="ПИ240215">
+            </div>
+            <div>
+              <label for="group">Группа</label>
+              <input id="group" name="group" value="ПИ2402">
+            </div>
+            <div>
+              <label for="backendMethod">Проверка на backend</label>
+              <select id="backendMethod" name="backendMethod">
+                <option value="manual-check">Ручная проверка RegExp</option>
+                <option value="schema-check">Fastify JSON Schema</option>
+                <option value="no-check">Без проверки на сервере</option>
+              </select>
+            </div>
+          </div>
+          <div class="actions form-actions">
+            <button class="primary" type="submit">Проверить</button>
+            <button type="button" id="fillInvalid">Подставить ошибку</button>
+          </div>
+        </form>
+        <div id="clientResult" class="message"></div>
+        <div id="serverResult" class="message"></div>
+      </section>
+
+      <section class="panel student-rules-panel">
+        <h2>Правила проверки</h2>
+        <div class="chips">
+          <span class="chip">ФИО: русские буквы, пробел, дефис</span>
+          <span class="chip">Зачётка: группа + вариант, ПИ240215</span>
+          <span class="chip">Группа: ПИ2402, год 20-25, группа 01-04</span>
+        </div>
+        <pre id="requestPreview"></pre>
+      </section>
+    </section>
+  </main>
+  <script src="/lab12/task1/app.js"></script>
+</body>
+</html>

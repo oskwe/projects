@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>ЛР №8</title>
+</head>
+<body>
+    <h1>фронтенд для ЛР №7</h1>
+    <!-- Ссылки на задания -->
+    <hr>
+    <h3>Перейти к заданиям:</h3>
+    <ul>
+        <li><a href="/lab8/task1/">Задание 1</a></li>
+        <li><a href="/lab8/task2/">Задание 2</a></li>
+        <li><a href="/lab8/task3/">Задание 3</a></li>
+    </ul>
+
+    <script>
+        // Функция для проверки API
+        async function checkApi(url, elementId) {
+            const el = document.getElementById(elementId);
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error(response.statusText);
+                const data = await response.json();
+                el.textContent = JSON.stringify(data);
+                el.style.color = 'green';
+            } catch (error) {
+                console.error(error);
+                el.textContent = 'Ошибка! (См. консоль F12)';
+                el.style.color = 'red';
+            }
+        }
+
+        // Запускаем проверку при загрузке
+        // Обратите внимание: пути относительные, если мы на странице /lab7/, то API будет /api/lab7/...
+        // Но так как этот файл лежит в /lab7/index.html, а API в корне /api/..., 
+        // лучше использовать абсолютные пути от корня домена.
+        
+        checkApi('/api/lab8/task1?operation=add&a=2&b=2', 'res1');
+        checkApi('/api/lab8/task2', 'res2');
+        checkApi('/api/lab8/task3', 'res3');
+    </script>
+</body>
+</html>

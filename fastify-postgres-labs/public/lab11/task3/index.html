@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>ЛР11. Задание 3</title>
+    <link rel="stylesheet" href="/lab11/style.css">
+</head>
+<body>
+    <header>
+        <h1>Задание 3: защищённые области ЛР10</h1>
+        <nav class="nav">
+            <a href="/lab11/">К ЛР11</a>
+            <a href="/lab11/task1/">Задание 1</a>
+            <a href="/lab11/task2/">Задание 2</a>
+        </nav>
+    </header>
+    <main>
+        <section class="panel">
+            <h2>Роль</h2>
+            <p id="roleInfo" class="muted"></p>
+            <div class="actions">
+                <button type="button" id="refreshButton">Обновить данные</button>
+                <a class="button" href="/lab11/task1/">Войти</a>
+            </div>
+            <div id="message" class="message"></div>
+        </section>
+
+        <div class="tabs">
+            <button type="button" class="primary" data-tab="shop">Магазин</button>
+            <button type="button" data-tab="schedule">Расписание</button>
+        </div>
+
+        <section class="tab-panel" id="shopPanel">
+            <form class="panel admin-only" id="productForm" hidden>
+                <h2 id="productFormTitle">Создание товара</h2>
+                <input type="hidden" name="id">
+                <div class="form-grid">
+                    <div><label>Title</label><input name="title"></div>
+                    <div><label>Price, коп.</label><input name="price" type="number"></div>
+                    <div><label>Amount</label><input name="amount" type="number"></div>
+                    <div><label>Category</label><select name="category_id"></select></div>
+                    <div><label>Image URL</label><input name="image"></div>
+                </div>
+                <div class="actions">
+                    <button class="primary" type="submit">Сохранить товар</button>
+                    <button type="button" id="resetProductFormButton">Сбросить</button>
+                </div>
+            </form>
+            <section class="panel">
+                <h2>Товары</h2>
+                <div id="productsTable"></div>
+            </section>
+        </section>
+
+        <section class="tab-panel" id="schedulePanel" hidden>
+            <form class="panel admin-only" id="scheduleForm" hidden>
+                <h2 id="scheduleFormTitle">Создание занятия</h2>
+                <input type="hidden" name="id">
+                <div class="form-grid" id="scheduleFields"></div>
+                <div class="actions">
+                    <button class="primary" type="submit">Сохранить занятие</button>
+                    <button type="button" id="resetScheduleFormButton">Сбросить</button>
+                </div>
+            </form>
+            <section class="panel">
+                <h2>Расписание</h2>
+                <div id="scheduleTable"></div>
+            </section>
+        </section>
+    </main>
+    <script src="/lab11/task3/app.js"></script>
+</body>
+</html>

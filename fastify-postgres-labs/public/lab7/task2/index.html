@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>ЛР7 Задание 2: Форма студента</title>
+    <style>
+        body { font-family: sans-serif; max-width: 700px; margin: 40px auto; padding: 20px; background: #f4f4f4; }
+        .card { background: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1 { text-align: center; color: #333; margin-top: 0; }
+        
+        .form-row { display: flex; gap: 15px; margin-bottom: 15px; flex-wrap: wrap; }
+        .form-group { flex: 1; min-width: 150px; display: flex; flex-direction: column; }
+        
+        label { font-size: 14px; font-weight: bold; color: #555; margin-bottom: 5px; }
+        input[type="text"], select { padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 16px; }
+        
+        .radio-group { display: flex; gap: 20px; align-items: center; height: 42px; }
+        .radio-group label { font-weight: normal; cursor: pointer; display: flex; align-items: center; gap: 5px; margin: 0; }
+        
+        .checkbox-group { display: flex; align-items: center; gap: 10px; margin: 15px 0; }
+        .checkbox-group input { width: 20px; height: 20px; }
+        .checkbox-group label { font-weight: bold; cursor: pointer; margin: 0; }
+
+        /* Скрытое поле проекта */
+        #projectGroup { display: none; margin-top: 10px; padding: 15px; background: #eef7ff; border-left: 4px solid #007bff; border-radius: 4px; }
+        #projectGroup.visible { display: block; }
+
+        button { width: 100%; padding: 12px; background-color: #28a745; color: white; border: none; border-radius: 6px; font-size: 16px; cursor: pointer; margin-top: 10px; }
+        button:hover { background-color: #218838; }
+
+        .result-box { margin-top: 25px; padding: 15px; background: #e9ecef; border-radius: 6px; display: none; }
+        .result-item { margin-bottom: 8px; font-size: 16px; }
+        .result-label { font-weight: bold; color: #333; }
+        .api-note { font-size: 0.8rem; color: #777; margin-top: 20px; text-align: center; }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h1>Анкета студента</h1>
+
+        <form id="studentForm">
+            <!-- ФИО -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Фамилия</label>
+                    <input type="text" id="surname" required placeholder="Иванов">
+                </div>
+                <div class="form-group">
+                    <label>Имя</label>
+                    <input type="text" id="name" required placeholder="Иван">
+                </div>
+                <div class="form-group">
+                    <label>Отчество</label>
+                    <input type="text" id="patronymic" placeholder="Иванович">
+                </div>
+            </div>
+
+            <!-- Пол -->
+            <div class="form-group">
+                <label>Пол</label>
+                <div class="radio-group">
+                    <label><input type="radio" name="gender" value="male" checked> Мужской</label>
+                    <label><input type="radio" name="gender" value="female"> Женский</label>
+                </div>
+            </div>
+
+            <!-- Факультет -->
+            <div class="form-group">
+                <label>Факультет</label>
+                <select id="faculty">
+                    <option value="it">Информационные технологии</option>
+                    <option value="econ">Экономика</option>
+                    <option value="law">Юриспруденция</option>
+                    <option value="eng">Инженерия</option>
+                </select>
+            </div>
+
+            <!-- Чекбокс проекта -->
+            <div class="checkbox-group">
+                <input type="checkbox" id="hasProject">
+                <label for="hasProject">Участвую в проекте</label>
+            </div>
+
+            <!-- Название проекта (скрытое) -->
+            <div id="projectGroup">
+                <div class="form-group">
+                    <label>Наименование проекта</label>
+                    <input type="text" id="projectName" placeholder="Мой крутой проект">
+                </div>
+            </div>
+
+            <button type="submit">Сохранить (Отправить GET)</button>
+        </form>
+
+        <!-- Результат -->
+        <div id="resultBox" class="result-box">
+            <h3>Ответ от сервера:</h3>
+            <div class="result-item"><span class="result-label">Фамилия:</span> <span id="resLastname"></span></div>
+            <div class="result-item"><span class="result-label">Инициалы:</span> <span id="resInitials"></span></div>
+            <div class="result-item"><span class="result-label">Статус проекта:</span> <span id="resStatus"></span></div>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('studentForm');
+        const hasProjectCheck = document.getElementById('hasProject');
+        const projectGroup = document.getElementById('projectGroup');
+        const resultBox = document.getElementById('resultBox');
+
+        // Логика показа/скрытия поля проекта
+        hasProjectCheck.addEventListener('change', () => {
+            if (hasProjectCheck.checked) {
+                projectGroup.classList.add('visible');
+            } else {
+                projectGroup.classList.remove('visible');
+            }
+        });
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            // Сбор данных
+            const surname = document.getElementById('surname').value.trim();
+            const name = document.getElementById('name').value.trim();
+            const patronymic = document.getElementById('patronymic').value.trim();
+            const isParticipating = hasProjectCheck.checked;
+
+            if (!surname || !name) {
+                alert("Заполните Фамилию и Имя!");
+                return;
+            }
+
+            try {
+                // 1. Запрос на получение инициалов
+                const urlInitials = `/api/lab7/task2/makeInitials?surname=${encodeURIComponent(surname)}&name=${encodeURIComponent(name)}&patronymic=${encodeURIComponent(patronymic)}`;
+                const res1 = await fetch(urlInitials);
+                const data1 = await res1.json();
+
+                if (!res1.ok) throw new Error(data1.error);
+
+                // 2. Запрос на получение статуса проекта
+                const urlStatus = `/api/lab7/task2/makeProjectStatus?surname=${encodeURIComponent(surname)}&name=${encodeURIComponent(name)}&patronymic=${encodeURIComponent(patronymic)}&hasProject=${isParticipating}`;
+                const res2 = await fetch(urlStatus);
+                const data2 = await res2.json();
+
+                if (!res2.ok) throw new Error(data2.error);
+
+                // Отображение результата (берем данные из второго запроса, так как он полнее)
+                document.getElementById('resLastname').textContent = data2.lastname;
+                document.getElementById('resInitials').textContent = data2.initials;
+                document.getElementById('resStatus').textContent = data2.projectParticipant;
+                
+                resultBox.style.display = 'block';
+
+            } catch (error) {
+                alert("Ошибка: " + error.message);
+                resultBox.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>

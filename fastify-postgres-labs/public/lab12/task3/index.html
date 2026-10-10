@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ЛР12. Задание 3</title>
+  <link rel="stylesheet" href="/lab12/style.css">
+</head>
+<body>
+  <header>
+    <h1>Задание 3. Тестер регулярных выражений</h1>
+    <nav class="nav">
+      <a href="/lab12/">К ЛР12</a>
+      <a href="/lab12/task1/">Задание 1</a>
+      <a href="/lab12/task2/">Задание 2</a>
+    </nav>
+  </header>
+  <main>
+    <section class="panel">
+      <form id="regexForm">
+        <div class="form-grid">
+          <div>
+            <label for="pattern">Шаблон RegExp</label>
+            <input id="pattern" name="pattern" value="\\d+">
+          </div>
+          <div>
+            <label for="flags">Флаги</label>
+            <input id="flags" name="flags" value="g">
+          </div>
+        </div>
+        <div>
+          <label for="text">Строка для проверки</label>
+          <textarea id="text" name="text">Мясников Никита Сергеевич, группа ПИ2402, зачётка ПИ240215</textarea>
+        </div>
+        <div class="actions">
+          <button class="primary" type="submit">Проверить</button>
+          <button class="danger" type="button" id="clearHistory">Очистить результаты</button>
+        </div>
+      </form>
+      <div id="currentResult" class="message"></div>
+    </section>
+
+    <section class="panel">
+      <h2>История проверок</h2>
+      <div id="history" class="history-list"></div>
+    </section>
+  </main>
+  <script src="/lab12/task3/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Задание 9</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .header {
+            text-align: center;
+            background: #333;
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .btn {
+            display: block;
+            width: 100%;
+            text-align: center;
+            background: #27ae60;
+            color: white;
+            padding: 15px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            font-weight: bold;
+            box-sizing: border-box; /* Чтобы padding не ломал ширину */
+        }
+        .btn:hover { background: #219150; }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr; /* По умолчанию 1 колонка */
+            gap: 20px;
+        }
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        h2 { margin-top: 0; color: #333; }
+        ul { list-style: none; padding: 0; }
+        li { margin-bottom: 10px; }
+        
+        .badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 4px;
+            color: white;
+            font-size: 0.9rem;
+            margin-right: 5px;
+        }
+        .py { background: #3776ab; }
+        .sql { background: #003b57; }
+
+        /* Адаптивность: на экранах шире 600px делаем 2 колонки */
+        @media (min-width: 600px) {
+            .grid { grid-template-columns: 2fr 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Лабораторная работа №2</h1>
+        <p>Отчет студента</p>
+    </div>
+
+    <!-- Ссылка на главное меню -->
+    <a href="/" class="btn">Вернуться в главное меню</a>
+
+    <div class="grid">
+        <!-- Левая колонка: Инфо и Задания -->
+        <div>
+            <div class="card">
+                <h2>Личная информация</h2>
+                <ul>
+                    <li><strong>ФИО:</strong> Мясников Никита Сергеевич</li>
+                    <li><strong>Группа:</strong> ПИ2402</li>
+                    <li><strong>Задание 10:</strong> <a href="http://project22170706.tilda.ws">Ссылка на сайт</a></li>
+                </ul>
+            </div>
+            
+        </div>
+
+        <!-- Правая колонка: Прогресс и Баллы -->
+        <div>
+            <div class="card">
+                <h2>Прогресс</h2>
+                <p style="font-size: 1.2rem; font-weight: bold; color: #27ae60;">
+                    Сдано: 4/12
+                </p>
+                <small>Дата обновления: 19.03.26</small>
+            </div>
+
+            <br>
+
+            <div class="card">
+                <h2>Hackerrank</h2>
+                <div>
+                    <span class="badge py">Python: 0</span>
+                    <span class="badge sql">SQL: 0</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer style="text-align: center; margin-top: 30px; color: #777;">
+        &copy; Мясников Никита
+    </footer>
+
+</body>
+</html>

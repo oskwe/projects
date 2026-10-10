@@ -1,0 +1,63 @@
+/* Добавить в существующий styles.css */
+
+@media print {
+    .not-print, .sidenav, nav, header, .print-btn { 
+        display: none !important; 
+    }
+    
+    main { 
+        margin-left: 0 !important; 
+        padding: 0 !important; 
+    }
+    
+    #print-area { 
+        position: absolute; 
+        left: 0; 
+        top: 0; 
+        width: 100%; 
+    }
+    
+    table { 
+        border-collapse: collapse !important; 
+        width: 100%; 
+        font-size: 11pt; 
+    }
+    
+    table th, table td { 
+        border: 1px solid #000 !important; 
+        padding: 4px !important; 
+    }
+    
+    body { 
+        color: #000 !important; 
+        background: #fff !important; 
+        font-family: "Times New Roman", serif; 
+    }
+    
+    .print-header { 
+        text-align: center; 
+        margin-bottom: 20px; 
+    }
+    
+    .print-header h5 { 
+        font-weight: bold; 
+        margin-bottom: 5px; 
+    }
+    
+    .print-header .subtitle { 
+        font-size: 12pt; 
+        margin-bottom: 15px; 
+    }
+    
+    .signature-line { 
+        margin-top: 40px; 
+        display: flex; 
+        justify-content: space-between; 
+    }
+    
+    .signature-box { 
+        border-top: 1px solid #000; 
+        padding-top: 5px; 
+        min-width: 200px; 
+    }
+}

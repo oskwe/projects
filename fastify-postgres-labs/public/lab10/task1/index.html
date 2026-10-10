@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ЛР10. Задание 1</title>
+  <style>
+    body { margin: 0; font-family: Arial, sans-serif; color: #202124; background: #f5f7fb; }
+    main { max-width: 1180px; margin: 0 auto; padding: 28px 18px 44px; }
+    a { color: #174ea6; }
+    h1 { margin: 18px 0 20px; font-size: 28px; }
+    h2 { margin: 0 0 14px; font-size: 22px; }
+    button { min-height: 40px; padding: 0 14px; border: 0; border-radius: 6px; background: #174ea6; color: #fff; font: inherit; font-weight: 700; cursor: pointer; }
+    button.secondary { background: #5f6368; }
+    button.danger { background: #b3261e; }
+    input, select, textarea { min-height: 40px; padding: 8px 10px; border: 1px solid #c6ccd6; border-radius: 6px; font: inherit; box-sizing: border-box; }
+    textarea { min-height: 76px; resize: vertical; }
+    .layout { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 18px; align-items: start; }
+    .panel, .card { padding: 16px; border: 1px solid #d8dee9; border-radius: 8px; background: #fff; box-sizing: border-box; }
+    .filters { display: grid; grid-template-columns: 180px 1fr auto; gap: 10px; margin-bottom: 16px; }
+    .products { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+    .product-title { margin: 0 0 8px; font-size: 18px; font-weight: 700; }
+    .muted { color: #5f6368; }
+    .price { margin: 12px 0; font-size: 20px; font-weight: 700; }
+    .actions { display: flex; flex-wrap: wrap; gap: 8px; }
+    .pager { display: flex; align-items: center; gap: 10px; margin-top: 16px; }
+    .cart-row, .order-row { display: grid; gap: 8px; padding: 10px 0; border-bottom: 1px solid #e6eaf0; }
+    .cart-row { grid-template-columns: 1fr 76px 36px; align-items: center; }
+    .order-row { grid-template-columns: 1fr auto; align-items: center; }
+    .cart-row:last-child, .order-row:last-child { border-bottom: 0; }
+    .cart-row input { width: 70px; }
+    .stack { display: grid; gap: 18px; }
+    .status { min-height: 22px; margin-top: 10px; font-weight: 700; }
+    .ok { color: #137333; }
+    .error { color: #b3261e; }
+    .detail { margin-top: 16px; }
+    @media (max-width: 900px) {
+      .layout { grid-template-columns: 1fr; }
+      .filters { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <a href="/lab10/">← ЛР10</a>
+    <h1>Задание 1. Интернет-магазин</h1>
+
+    <div class="layout">
+      <section>
+        <div class="panel">
+          <div class="filters">
+            <select id="category"></select>
+            <input id="search" type="search" placeholder="Поиск товара">
+            <button type="button" id="searchButton">Найти</button>
+          </div>
+          <div class="products" id="products">Загрузка...</div>
+          <div class="pager">
+            <button type="button" class="secondary" id="prevPage">Назад</button>
+            <span id="pageInfo"></span>
+            <button type="button" class="secondary" id="nextPage">Вперед</button>
+          </div>
+        </div>
+
+        <div class="panel detail" id="productDetail">
+          Выберите товар
+        </div>
+      </section>
+
+      <aside class="stack">
+        <section class="panel">
+          <h2>Добавить товар</h2>
+          <div class="stack">
+            <input id="newCategoryTitle" placeholder="Новая категория">
+            <button type="button" class="secondary" id="addCategoryButton">Добавить категорию</button>
+            <select id="newCategory"></select>
+            <input id="newTitle" placeholder="Название товара">
+            <textarea id="newDescription" placeholder="Описание товара"></textarea>
+            <input id="newPrice" type="number" min="0" placeholder="Цена в рублях">
+            <input id="newAmount" type="number" min="0" placeholder="Количество">
+          </div>
+          <div class="actions" style="margin-top: 10px;">
+            <button type="button" id="addProductButton">Добавить товар</button>
+          </div>
+          <p class="status" id="productStatus"></p>
+        </section>
+
+        <section class="panel">
+          <h2>Корзина</h2>
+          <div id="cart"></div>
+          <p class="price" id="cartTotal">Итого: 0 ₽</p>
+          <input id="customerName" placeholder="Имя покупателя" value="Покупатель">
+          <input id="customerPhone" placeholder="Телефон" value="+7 900 000-00-00">
+          <div class="actions" style="margin-top: 10px;">
+            <button type="button" id="buyButton">Купить</button>
+            <button type="button" class="secondary" id="clearCart">Очистить</button>
+          </div>
+          <p class="status" id="cartStatus"></p>
+        </section>
+
+        <section class="panel">
+          <h2>Заказы</h2>
+          <div id="orders">Загрузка...</div>
+          <div class="detail" id="orderDetail"></div>
+        </section>
+      </aside>
+    </div>
+  </main>
+
+  <script>
+    const API = '/api/lab10';
+    const CART_KEY = 'lab10_cart';
+    let state = { page: 1, pages: 1, products: [] };
+
+    const formatPrice = (cents) => (cents / 100).toLocaleString('ru-RU', { style: 'currency', currency: 'RUB' });
+    const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#039;',
+    }[char]));
+
+    async function requestJson(url, options = {}) {
+      const response = await fetch(url, options);
+      const data = await response.json();
+      if (!response.ok) {
+        const error = new Error(data.error || 'Ошибка запроса');
+        error.payload = data;
+        throw error;
+      }
+      return data;
+    }
+
+    function getCart() {
+      return JSON.parse(localStorage.getItem(CART_KEY) || '[]');
+    }
+
+    function setCart(cart) {
+      localStorage.setItem(CART_KEY, JSON.stringify(cart));
+      renderCart();
+    }
+
+    function addToCart(id) {
+      const cart = getCart();
+      const product = state.products.find((entry) => entry.id === id);
+      const item = cart.find((entry) => entry.id === id);
+      if (item) {
+        item.quantity = Math.min(5, item.quantity + 1);
+        item.title = product?.title || item.title;
+        item.price = product?.price || item.price;
+      } else {
+        cart.push({ id, quantity: 1, title: product?.title || `Товар #${id}`, price: product?.price || 0 });
+      }
+      setCart(cart);
+      renderStatus('Товар добавлен', 'ok');
+    }
+
+    function updateQuantity(id, value) {
+      const quantity = Math.min(5, Math.max(1, parseInt(value || '1', 10)));
+      setCart(getCart().map((item) => (item.id === id ? { ...item, quantity } : item)));
+    }
+
+    function removeFromCart(id) {
+      setCart(getCart().filter((item) => item.id !== id));
+    }
+
+    function renderStatus(message, type = '') {
+      const status = document.getElementById('cartStatus');
+      status.className = `status ${type}`;
+      status.textContent = message;
+    }
+
+    function renderProductStatus(message, type = '') {
+      const status = document.getElementById('productStatus');
+      status.className = `status ${type}`;
+      status.textContent = message;
+    }
+
+    async function loadCategories() {
+      const categories = await requestJson(`${API}/categories`);
+      document.getElementById('category').innerHTML = [
+        '<option value="">Все категории</option>',
+        ...categories.map((item) => `<option value="${item.id}">${escapeHtml(item.title)}</option>`),
+      ].join('');
+      document.getElementById('newCategory').innerHTML = categories
+        .map((item) => `<option value="${item.id}">${escapeHtml(item.title)}</option>`)
+        .join('');
+      return categories;
+    }
+
+    async function loadProducts(page = 1) {
+      state.page = page;
+      const params = new URLSearchParams({ page });
+      const category = document.getElementById('category').value;
+      const q = document.getElementById('search').value.trim();
+      if (category) params.set('category', category);
+      if (q) params.set('q', q);
+      const data = await requestJson(`${API}/products?${params}`);
+      state = { ...state, ...data, products: data.items };
+      renderProducts();
+      renderCart();
+    }
+
+    function renderProducts() {
+      const root = document.getElementById('products');
+      if (!state.products.length) {
+        root.textContent = 'Товары не найдены';
+        return;
+      }
+      root.innerHTML = state.products.map((product) => `
+        <article class="card">
+          <p class="product-title">${escapeHtml(product.title)}</p>
+          <p class="muted">${escapeHtml(product.category)}</p>
+          <p class="price">${formatPrice(product.price)}</p>
+          <p class="muted">На складе: ${product.amount}</p>
+          <div class="actions">
+            <button type="button" onclick="showProduct(${product.id})">Карточка</button>
+            <button type="button" class="secondary" onclick="addToCart(${product.id})">В корзину</button>
+          </div>
+        </article>
+      `).join('');
+      document.getElementById('pageInfo').textContent = `Страница ${state.page} из ${state.pages}`;
+    }
+
+    async function showProduct(id) {
+      const product = await requestJson(`${API}/task1/product/${id}`);
+      document.getElementById('productDetail').innerHTML = `
+        <h2>${escapeHtml(product.title)}</h2>
+        <p class="muted">${escapeHtml(product.category)}</p>
+        <p>${escapeHtml(product.description)}</p>
+        <p class="price">${formatPrice(product.price)}</p>
+        <p>Остаток: ${product.amount}</p>
+      `;
+    }
+
+    async function addProduct() {
+      const priceRub = parseInt(document.getElementById('newPrice').value || '0', 10);
+      const body = {
+        category_id: parseInt(document.getElementById('newCategory').value, 10),
+        title: document.getElementById('newTitle').value.trim(),
+        description: document.getElementById('newDescription').value.trim(),
+        price: priceRub * 100,
+        amount: parseInt(document.getElementById('newAmount').value || '0', 10),
+        image: '',
+      };
+
+      try {
+        await requestJson(`${API}/products`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+        document.getElementById('newTitle').value = '';
+        document.getElementById('newDescription').value = '';
+        document.getElementById('newPrice').value = '';
+        document.getElementById('newAmount').value = '';
+        renderProductStatus('Товар добавлен', 'ok');
+        await loadProducts(1);
+      } catch (error) {
+        renderProductStatus(error.message, 'error');
+      }
+    }
+
+    async function addCategory() {
+      const titleInput = document.getElementById('newCategoryTitle');
+      const title = titleInput.value.trim();
+
+      try {
+        const category = await requestJson(`${API}/categories`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ title }),
+        });
+        titleInput.value = '';
+        await loadCategories();
+        document.getElementById('newCategory').value = category.id;
+        renderProductStatus('Категория добавлена', 'ok');
+      } catch (error) {
+        renderProductStatus(error.message, 'error');
+      }
+    }
+
+    function renderCart() {
+      const cart = getCart();
+      const root = document.getElementById('cart');
+      let total = 0;
+      if (!cart.length) {
+        root.textContent = 'Корзина пуста';
+        document.getElementById('cartTotal').textContent = 'Итого: 0 ₽';
+        return;
+      }
+      root.innerHTML = cart.map((entry) => {
+        const product = state.products.find((item) => item.id === entry.id);
+        const title = product ? product.title : entry.title;
+        const price = product ? product.price : entry.price;
+        total += price * entry.quantity;
+        return `
+          <div class="cart-row">
+            <div><strong>${escapeHtml(title)}</strong><br>${formatPrice(price)}</div>
+            <input type="number" min="1" max="5" value="${entry.quantity}" onchange="updateQuantity(${entry.id}, this.value)">
+            <button type="button" class="danger" onclick="removeFromCart(${entry.id})">×</button>
+          </div>
+        `;
+      }).join('');
+      document.getElementById('cartTotal').textContent = `Итого: ${formatPrice(total)}`;
+    }
+
+    async function buyCart() {
+      const cart = getCart();
+      if (!cart.length) {
+        renderStatus('Корзина пуста', 'error');
+        return;
+      }
+      const customerName = document.getElementById('customerName').value.trim();
+      const customerPhone = document.getElementById('customerPhone').value.trim();
+      try {
+        for (const item of cart) {
+          await requestJson(`${API}/products/${item.id}/buy`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ quantity: item.quantity, customerName, customerPhone }),
+          });
+        }
+        setCart([]);
+        renderStatus('Покупка оформлена', 'ok');
+        await loadProducts(state.page);
+        await loadOrders();
+      } catch (error) {
+        const available = error.payload?.available;
+        renderStatus(available === undefined ? error.message : `${error.message}. Доступно: ${available}`, 'error');
+      }
+    }
+
+    async function loadOrders() {
+      const orders = await requestJson(`${API}/task1/orders`);
+      const root = document.getElementById('orders');
+      if (!orders.length) {
+        root.textContent = 'Заказов нет';
+        return;
+      }
+      root.innerHTML = orders.map((order) => `
+        <div class="order-row">
+          <div>
+            <strong>Заказ #${order.id}</strong><br>
+            <span class="muted">${escapeHtml(order.customer_name)} · ${formatPrice(order.total)}</span>
+          </div>
+          <button type="button" onclick="showOrder(${order.id})">Открыть</button>
+        </div>
+      `).join('');
+    }
+
+    async function showOrder(id) {
+      const order = await requestJson(`${API}/task1/orders/${id}`);
+      document.getElementById('orderDetail').innerHTML = `
+        <h2>Заказ #${order.id}</h2>
+        <p>${escapeHtml(order.customer_name)} · ${escapeHtml(order.customer_phone)}</p>
+        ${order.items.map((item) => `<p>${escapeHtml(item.title)} × ${item.quantity}: ${formatPrice(item.cost)}</p>`).join('')}
+        <p class="price">${formatPrice(order.total)}</p>
+      `;
+    }
+
+    document.getElementById('searchButton').addEventListener('click', () => loadProducts(1));
+    document.getElementById('category').addEventListener('change', () => loadProducts(1));
+    document.getElementById('prevPage').addEventListener('click', () => loadProducts(Math.max(1, state.page - 1)));
+    document.getElementById('nextPage').addEventListener('click', () => loadProducts(Math.min(state.pages, state.page + 1)));
+    document.getElementById('buyButton').addEventListener('click', buyCart);
+    document.getElementById('clearCart').addEventListener('click', () => setCart([]));
+    document.getElementById('addProductButton').addEventListener('click', addProduct);
+    document.getElementById('addCategoryButton').addEventListener('click', addCategory);
+
+    Promise.all([loadCategories(), loadProducts(), loadOrders()]).catch((error) => {
+      document.getElementById('products').textContent = error.message;
+    });
+  </script>
+</body>
+</html>

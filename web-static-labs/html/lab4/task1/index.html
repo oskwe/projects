@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8"/>
+    <title>Задание 1: Улучшенный Калькулятор</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <!-- Можно подключить стили из примера, если они есть, или оставить так -->
+    <style>
+        body { font-family: sans-serif; padding: 20px; }
+        .row { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; flex-wrap: wrap; }
+        input, select, button { padding: 8px; font-size: 16px; }
+        #result { font-weight: bold; color: #333; min-width: 150px; display: inline-block;}
+        .hidden { display: none; }
+        label { cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<section class="box">
+    <div class="row">
+        <!-- Первый операнд -->
+        <input type="text" id="operand1" placeholder="Число (x)" style="width: 150px;"/>
+        
+        <!-- Выбор операции -->
+        <select id="operator" aria-label="Операция">
+            <option value="+">+</option>
+            <option value="-">-</option>
+            <option value="*">*</option>
+            <option value="/">/</option>
+            <!-- Новые операции -->
+            <option value="sqrt">√ (Корень)</option>
+            <option value="log">log (Логарифм)</option>
+        </select>
+
+        <!-- Поле для основания логарифма (появляется только при выборе log) -->
+        <input type="text" id="logBase" placeholder="Основание (a)" class="hidden" style="width: 100px;"/>
+
+        <!-- Второй операнд (будет блокироваться для sqrt и log) -->
+        <input type="text" id="operand2" placeholder="Второе число (y)" style="width: 150px;"/>
+        
+        <button id="doCalc" type="button">=</button>
+        <span id="result" aria-live="polite"></span>
+    </div>
+
+    <div class="row">
+        <label>
+            <input type="checkbox" id="roundCheck"> Округление
+        </label>
+    </div>
+</section>
+
+<script src="script.js" defer></script>
+</body>
+</html>

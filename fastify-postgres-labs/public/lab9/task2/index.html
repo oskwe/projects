@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ЛР9. Задание 2</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      color: #202124;
+      background: #f5f7fb;
+    }
+
+    main {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 32px 18px;
+    }
+
+    a {
+      color: #174ea6;
+    }
+
+    h1 {
+      margin: 18px 0 20px;
+      font-size: 28px;
+    }
+
+    .toolbar, form, .panel {
+      padding: 18px;
+      border: 1px solid #d8dee9;
+      border-radius: 8px;
+      background: #fff;
+      margin-bottom: 16px;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+    }
+
+    input {
+      min-height: 40px;
+      padding: 8px 10px;
+      border: 1px solid #c6ccd6;
+      border-radius: 6px;
+      font: inherit;
+      box-sizing: border-box;
+    }
+
+    input[type="number"] {
+      width: 120px;
+    }
+
+    .grid input {
+      width: 100%;
+    }
+
+    button {
+      min-height: 40px;
+      padding: 0 14px;
+      border: 0;
+      border-radius: 6px;
+      background: #174ea6;
+      color: #fff;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    button.secondary {
+      background: #5f6368;
+    }
+
+    button.danger {
+      background: #b3261e;
+    }
+
+    button.qty {
+      width: 40px;
+      padding: 0;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 920px;
+    }
+
+    th, td {
+      padding: 10px;
+      border-bottom: 1px solid #e6eaf0;
+      text-align: left;
+      vertical-align: middle;
+    }
+
+    th {
+      background: #eaf1fb;
+      color: #174ea6;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+    }
+
+    .message {
+      padding: 14px;
+      border-radius: 8px;
+      background: #f8fbff;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <a href="/lab9/">Назад к ЛР9</a>
+    <h1>Задание 2. Управление товарами</h1>
+
+    <section class="toolbar">
+      <input type="number" id="lookupId" min="1" placeholder="ID товара">
+      <button type="button" id="lookupButton">Найти по ID</button>
+      <span id="lookupResult"></span>
+    </section>
+
+    <form id="addForm">
+      <h2>Добавить товар</h2>
+      <div class="grid">
+        <input type="text" name="title" placeholder="Название" required>
+        <input type="number" name="price" min="0" step="0.01" placeholder="Цена в рублях" required>
+        <input type="number" name="amount" min="0" step="1" placeholder="Количество" required>
+        <button type="submit">Сохранить в БД</button>
+      </div>
+    </form>
+
+    <section class="panel">
+      <div id="stock" class="message">Сводка склада загружается...</div>
+    </section>
+
+    <section class="panel table-wrap">
+      <div id="list" class="message">Загрузка...</div>
+    </section>
+  </main>
+
+  <script>
+    const API = '/api/lab9';
+    const formatPrice = (cents) => (cents / 100).toLocaleString('ru-RU', {
+      style: 'currency',
+      currency: 'RUB',
+    });
+    const escapeHtml = (value) => String(value).replace(/[&<>"']/g, (char) => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#039;',
+    }[char]));
+
+    function rubToCents(value) {
+      return Math.round(parseFloat(value) * 100);
+    }
+
+    async function requestJson(url, options = {}) {
+      const response = await fetch(url, options);
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.details || data.error || 'Ошибка запроса');
+      }
+      return data;
+    }
+
+    async function loadStock() {
+      const stock = await requestJson(`${API}/task1/stock`);
+      document.getElementById('stock').textContent = `Наименований: ${stock.total_products}; всего единиц: ${stock.total_items}; стоимость: ${formatPrice(stock.total_value)}.`;
+    }
+
+    async function saveProduct(id) {
+      const row = document.querySelector(`tr[data-id="${id}"]`);
+      const title = row.querySelector('[data-field="title"]').value.trim();
+      const price = rubToCents(row.querySelector('[data-field="price"]').value);
+      const amount = parseInt(row.querySelector('[data-field="amount"]').value, 10);
+
+      await requestJson(`${API}/products/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, price, amount }),
+      });
+      await refresh();
+    }
+
+    async function deleteProduct(id) {
+      if (!confirm('Удалить товар?')) {
+        return;
+      }
+      await requestJson(`${API}/products/${id}`, { method: 'DELETE' });
+      await refresh();
+    }
+
+    function changeAmount(id, delta) {
+      const input = document.querySelector(`tr[data-id="${id}"] [data-field="amount"]`);
+      input.value = Math.max(0, parseInt(input.value || '0', 10) + delta);
+    }
+
+    function renderProducts(products) {
+      const list = document.getElementById('list');
+      if (products.length === 0) {
+        list.className = 'message';
+        list.textContent = 'Товары не найдены';
+        return;
+      }
+
+      list.className = '';
+      list.innerHTML = `
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Наименование</th>
+              <th>Цена</th>
+              <th>Количество</th>
+              <th>Действия</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${products.map((product) => `
+              <tr data-id="${product.id}">
+                <td>${product.id}</td>
+                <td><input data-field="title" type="text" value="${escapeHtml(product.title)}"></td>
+                <td><input data-field="price" type="number" min="0" step="0.01" value="${(product.price / 100).toFixed(2)}"></td>
+                <td>
+                  <button type="button" class="qty secondary" onclick="changeAmount(${product.id}, -1)">-</button>
+                  <input data-field="amount" type="number" min="0" step="1" value="${product.amount}">
+                  <button type="button" class="qty secondary" onclick="changeAmount(${product.id}, 1)">+</button>
+                </td>
+                <td>
+                  <button type="button" onclick="saveProduct(${product.id})">Сохранить</button>
+                  <button type="button" class="danger" onclick="deleteProduct(${product.id})">Удалить</button>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+    }
+
+    async function loadProducts() {
+      const products = await requestJson(`${API}/products`);
+      renderProducts(products);
+    }
+
+    async function refresh() {
+      await Promise.all([loadStock(), loadProducts()]);
+    }
+
+    document.getElementById('addForm').addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const formData = new FormData(event.target);
+      await requestJson(`${API}/products`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: formData.get('title').trim(),
+          price: rubToCents(formData.get('price')),
+          amount: parseInt(formData.get('amount'), 10),
+        }),
+      });
+      event.target.reset();
+      await refresh();
+    });
+
+    document.getElementById('lookupButton').addEventListener('click', async () => {
+      const id = document.getElementById('lookupId').value;
+      const output = document.getElementById('lookupResult');
+      if (!id) {
+        output.textContent = 'Введите ID';
+        return;
+      }
+      try {
+        const product = await requestJson(`${API}/products/${id}`);
+        output.textContent = `${product.id}: ${product.title}, ${formatPrice(product.price)}, остаток ${product.amount}`;
+      } catch (error) {
+        output.textContent = error.message;
+      }
+    });
+
+    refresh().catch((error) => {
+      document.getElementById('list').textContent = error.message;
+    });
+  </script>
+</body>
+</html>

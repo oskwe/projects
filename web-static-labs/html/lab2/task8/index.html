@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Адаптивный фон.</title>
+    <style>
+        body{
+            margin: 0;
+            padding: 0;            
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: Arial, sans-serif;
+            font-size: 4rem;
+            font-weight: bold;
+            color: white;
+            transition: backgroun-color 0.5s ease;
+            background-color: #c0392b;
+        }
+        /*300px-800px*/
+        @media(min-width:300px){
+            body{
+                background-color: #3498db;
+            }
+        }
+        /*800-1300px*/
+        @media(min-width:800px){
+            body{
+                background-color: #2ecc71;
+            }
+        }
+        /*1300-1800px*/
+        @media(min-width:1300px){
+            body{
+                background-color: #f1c40f;
+                color:black;
+            }
+        }
+        /*1800px an >*/
+        @media (min-width:1800) {
+            body{
+                background-color: #8e44ad;
+                color:white;
+            }
+        }
+    </style>
+</head>
+<body>
+    <span id="color-name">Pomegranate</span>
+    <script>
+        function updateColorName(){
+            const width = window.innerWidth;
+            const label = document.getElementById('color-name');
+            if(width >=1800){
+                label.textContent="Wisteria";
+            } else if(width >=1300){
+                label.textContent="Sun Flower";
+            } else if(width >=800){
+                label.textContent="Emerald";
+            } else if(width>=300){
+                label.textContent="Peter River";
+            } else{
+                label.textContent="Pomegranate";
+            }
+        }
+        window.addEventListener('load', updateColorName);
+        window.addEventListener('resize', updateColorName);
+    </script>
+</body>
+</html>

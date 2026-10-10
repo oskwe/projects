@@ -1,0 +1,423 @@
+:root {
+  --bg: #0d1117;
+  --panel: #151b23;
+  --panel-soft: #1b2430;
+  --text: #e6edf3;
+  --muted: #95a3b8;
+  --line: #2d3746;
+  --blue: #58a6ff;
+  --teal: #39d0c4;
+  --red: #ff7b72;
+  --green: #56d364;
+  --ink: #0a0f16;
+  --font-body: "Aptos", "Segoe UI", Tahoma, Arial, sans-serif;
+  --font-title: "Aptos Display", "Segoe UI Semibold", "Segoe UI", Arial, sans-serif;
+  --font-code: "Cascadia Code", Consolas, Monaco, monospace;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  line-height: 1.5;
+}
+
+body,
+input,
+select,
+textarea {
+  font-family: var(--font-body);
+  letter-spacing: 0;
+}
+
+header,
+main {
+  width: min(1180px, calc(100% - 32px));
+  margin: 0 auto;
+}
+
+header {
+  padding: 28px 0 20px;
+}
+
+header::after {
+  background: var(--line);
+  content: "";
+  display: block;
+  height: 1px;
+  margin-top: 18px;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-title);
+  font-weight: 700;
+  letter-spacing: 0;
+  margin: 0 0 12px;
+}
+
+h1 {
+  font-size: 32px;
+  line-height: 1.18;
+}
+
+h2 {
+  font-size: 26px;
+  line-height: 1.2;
+}
+
+h3 {
+  font-size: 20px;
+  line-height: 1.25;
+}
+
+p {
+  margin: 0 0 12px;
+}
+
+a { color: var(--blue); }
+
+.nav,
+.actions,
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.nav {
+  margin-top: 16px;
+}
+
+.nav a,
+button,
+.button {
+  align-items: center;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  color: var(--text);
+  cursor: pointer;
+  display: inline-flex;
+  justify-content: center;
+  min-height: 38px;
+  padding: 8px 14px;
+  text-decoration: none;
+}
+
+button,
+.button,
+label,
+.badge,
+.chip,
+.eyebrow {
+  font-family: var(--font-title);
+  letter-spacing: 0;
+}
+
+button.primary,
+.button.primary {
+  background: #1f6feb;
+  border-color: var(--blue);
+  color: #fff;
+}
+
+button.danger {
+  background: #8e1519;
+  border-color: var(--red);
+  color: #fff;
+}
+
+.grid {
+  display: grid;
+  gap: 16px;
+}
+
+.grid.two {
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+}
+
+.panel,
+.card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.22);
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 18px;
+}
+
+.panel.compact {
+  padding: 16px;
+}
+
+.hero-panel {
+  align-items: start;
+  display: grid;
+  gap: 14px;
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 12px;
+}
+
+label {
+  display: block;
+  color: var(--text);
+  font-size: 15px;
+  font-weight: 650;
+  margin-bottom: 6px;
+}
+
+input,
+select,
+textarea {
+  background: #101720;
+  border: 1px solid #3a4759;
+  border-radius: 8px;
+  color: var(--text);
+  font: inherit;
+  min-height: 48px;
+  padding: 10px 12px;
+  width: 100%;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--blue);
+  outline: 3px solid rgba(88, 166, 255, 0.2);
+}
+
+textarea {
+  min-height: 108px;
+  resize: vertical;
+}
+
+.actions {
+  margin-top: 12px;
+}
+
+.muted { color: var(--muted); }
+
+.message {
+  border-radius: 8px;
+  margin-top: 12px;
+  min-height: 24px;
+  padding: 12px;
+}
+
+.message:empty {
+  display: none;
+}
+
+.message.success {
+  background: rgba(35, 134, 54, 0.16);
+  border: 1px solid rgba(86, 211, 100, 0.32);
+  color: var(--green);
+}
+
+.message.error {
+  background: rgba(248, 81, 73, 0.14);
+  border: 1px solid rgba(255, 123, 114, 0.32);
+  color: var(--red);
+}
+
+pre,
+code {
+  font-family: var(--font-code);
+}
+
+pre {
+  background: var(--ink);
+  border: 1px solid #243244;
+  border-radius: 8px;
+  color: #e7edf8;
+  overflow-x: auto;
+  padding: 12px;
+  white-space: pre-wrap;
+}
+
+.badge,
+.chip {
+  border-radius: 999px;
+  display: inline-flex;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 4px 9px;
+}
+
+.badge.ok {
+  background: rgba(35, 134, 54, 0.18);
+  color: var(--green);
+}
+
+.badge.fail {
+  background: rgba(248, 81, 73, 0.16);
+  color: var(--red);
+}
+
+.badge.neutral,
+.chip {
+  background: #10243a;
+  color: var(--blue);
+}
+
+.chip.accent {
+  background: #0d3536;
+  color: var(--teal);
+}
+
+.test-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+
+.history-list {
+  display: grid;
+  gap: 12px;
+}
+
+.history-item {
+  background: var(--panel-soft);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.history-item.success {
+  border-left: 5px solid var(--green);
+}
+
+.history-item.error {
+  border-left: 5px solid var(--red);
+}
+
+.matches {
+  background: #101722;
+  border-radius: 6px;
+  color: var(--text);
+  margin-top: 8px;
+  padding: 8px;
+}
+
+.stat-row {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.stat {
+  background: var(--panel-soft);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.stat strong {
+  display: block;
+  font-size: 20px;
+}
+
+.task1-page {
+  --font-body: "Segoe UI Variable Text", "Segoe UI", Arial, sans-serif;
+  --font-title: "Trebuchet MS", "Segoe UI Semibold", Arial, sans-serif;
+  --font-code: "Cascadia Mono", "Cascadia Code", Consolas, monospace;
+}
+
+.task1-page h1 {
+  font-size: 34px;
+  font-weight: 700;
+}
+
+.task1-page h2 {
+  font-size: 27px;
+}
+
+.task1-page p,
+.task1-page input,
+.task1-page select {
+  font-size: 16px;
+}
+
+.task1-page label,
+.task1-page button,
+.task1-page .chip {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.task1-page pre {
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.eyebrow {
+  color: var(--teal);
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+}
+
+.student-layout {
+  align-items: start;
+  display: grid;
+  gap: 18px;
+  grid-template-columns: minmax(310px, 390px) minmax(0, 1fr);
+}
+
+.student-form-panel {
+  padding: 28px;
+}
+
+.student-form-panel .form-stack {
+  grid-template-columns: 1fr;
+  margin-top: 18px;
+}
+
+.student-form-panel .form-actions {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: 1fr;
+  margin-top: 20px;
+}
+
+.student-form-panel .form-actions button {
+  min-height: 48px;
+  width: 100%;
+}
+
+.student-rules-panel pre {
+  margin-bottom: 0;
+  margin-top: 18px;
+  min-height: 300px;
+}
+
+@media (max-width: 720px) {
+  header,
+  main {
+    width: min(100% - 20px, 1180px);
+  }
+
+  .panel,
+  .card {
+    padding: 14px;
+  }
+
+  .student-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .student-form-panel {
+    padding: 20px;
+  }
+}

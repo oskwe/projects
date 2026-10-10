@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block title %}Склады{% endblock %}
+
+{% block content %}
+<h4>Склады</h4>
+<div class='right-align' style='margin-bottom: 20px;'>
+  <a href='{% url "warehouses:create" %}' class='btn blue'>
+    <i class='material-icons left'>add</i>Добавить
+  </a>
+</div>
+
+<table class='highlight'>
+  <thead>
+    <tr><th>ID</th><th>Название</th><th>Адрес</th><th>Кладовщик</th><th>Действия</th></tr>
+  </thead>
+  <tbody>
+    {% for warehouse in warehouses %}
+    <tr>
+      <td>{{ warehouse.id }}</td>
+      <td>{{ warehouse.name }}</td>
+      <td>{{ warehouse.address|default:"—" }}</td>
+      <td>{{ warehouse.storekeeper|default:"—" }}</td>
+      <td class="action-buttons">
+        <a aria-label="Изменить" title="Изменить" href='{% url "warehouses:edit" warehouse.pk %}' class='btn-small orange'>
+          <i class='material-icons'>edit</i>
+        </a>
+        <a aria-label="Удалить" title="Удалить" href='{% url "warehouses:delete" warehouse.pk %}' class='btn-small red'>
+          <i class='material-icons'>delete</i>
+        </a>
+      </td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="5">Склады пока не добавлены.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

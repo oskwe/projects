@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>ЛР11. Задание 1</title>
+    <link rel="stylesheet" href="/lab11/style.css">
+</head>
+<body>
+    <header>
+        <h1>Задание 1: JWT-аутентификация</h1>
+        <nav class="nav">
+            <a href="/lab11/">К ЛР11</a>
+            <a href="/lab11/task2/">Задание 2</a>
+            <a href="/lab11/task3/">Задание 3</a>
+        </nav>
+    </header>
+    <main>
+        <section class="panel">
+            <h2>Текущий токен</h2>
+            <p class="muted" id="tokenState"></p>
+            <pre id="tokenPreview"></pre>
+        </section>
+
+        <section class="grid two">
+            <form class="panel" id="registerForm">
+                <h2>Register</h2>
+                <div class="form-grid">
+                    <div><label>Login</label><input name="login" value="student"></div>
+                    <div><label>Password</label><input name="password" type="password" value="1234"></div>
+                    <div><label>Full name</label><input name="full_name" value="Student User"></div>
+                    <div><label>Email</label><input name="email" value="student@example.local"></div>
+                </div>
+                <div class="actions"><button class="primary" type="submit">Register</button></div>
+            </form>
+
+            <form class="panel" id="loginForm">
+                <h2>Login</h2>
+                <div class="form-grid">
+                    <div><label>Login</label><input name="login" value="admin"></div>
+                    <div><label>Password</label><input name="password" type="password" value="admin123"></div>
+                </div>
+                <div class="actions">
+                    <button class="primary" type="submit">Login</button>
+                    <button type="button" id="logoutButton">Logout</button>
+                </div>
+            </form>
+        </section>
+
+        <section class="panel">
+            <h2>Защищённые запросы</h2>
+            <div class="actions">
+                <button type="button" id="profileButton">GET /profile</button>
+                <button type="button" id="adminButton">GET /admin</button>
+            </div>
+        </section>
+
+        <form class="panel" id="passwordForm">
+            <h2>Change password</h2>
+            <div class="form-grid">
+                <div><label>Current password</label><input name="current_password" type="password"></div>
+                <div><label>New password</label><input name="new_password" type="password"></div>
+            </div>
+            <div class="actions"><button class="primary" type="submit">Change password</button></div>
+        </form>
+
+        <section class="panel">
+            <h2>Последний запрос</h2>
+            <div class="status-line" id="lastStatus">Статус пока не получен</div>
+            <h3>Request</h3>
+            <pre id="requestView"></pre>
+            <h3>Response</h3>
+            <pre id="responseView"></pre>
+        </section>
+
+        <section class="panel">
+            <h2>Результаты тестов 1-5</h2>
+            <div id="tests"></div>
+        </section>
+    </main>
+    <script src="/lab11/task1/app.js"></script>
+</body>
+</html>

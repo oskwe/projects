@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ЛР8. Задание 3</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      color: #202124;
+      background: #f5f7fb;
+    }
+
+    main {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 32px 18px;
+    }
+
+    a {
+      color: #174ea6;
+    }
+
+    h1 {
+      margin: 18px 0 20px;
+      font-size: 28px;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid #d8dee9;
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 840px;
+    }
+
+    th, td {
+      padding: 12px;
+      border-bottom: 1px solid #e6eaf0;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: #eaf1fb;
+      color: #174ea6;
+    }
+
+    .team-result {
+      display: inline-block;
+      min-width: 100%;
+      padding: 6px 8px;
+      border-radius: 6px;
+      box-sizing: border-box;
+      font-weight: 700;
+    }
+
+    .win {
+      background: #e6f4ea;
+      color: #137333;
+    }
+
+    .loss {
+      background: #fce8e6;
+      color: #b3261e;
+    }
+
+    .draw {
+      background: #fff7d6;
+      color: #8a5a00;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .legend span {
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-weight: 700;
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .message {
+      padding: 18px;
+      border: 1px solid #d8dee9;
+      border-radius: 8px;
+      background: #fff;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <a href="/lab8/">Назад к ЛР8</a>
+    <h1>Задание 3. Матчи Qatar 2022</h1>
+
+    <div id="content" class="message">Загрузка...</div>
+  </main>
+
+  <script>
+    const content = document.getElementById('content');
+
+    function getTeamClasses(score) {
+      const [team1Score, team2Score] = score.split('-').map(Number);
+      if (team1Score === team2Score) {
+        return ['draw', 'draw'];
+      }
+      return team1Score > team2Score ? ['win', 'loss'] : ['loss', 'win'];
+    }
+
+    async function loadResults() {
+      try {
+        const response = await fetch('/api/lab8/task3/results');
+        const matches = await response.json();
+        if (!response.ok) {
+          throw new Error(matches.message || 'Ошибка загрузки данных');
+        }
+
+        content.className = 'table-wrap';
+        content.innerHTML = `
+          <div class="legend">
+            <span class="win">Победа</span>
+            <span class="loss">Поражение</span>
+            <span class="draw">Ничья</span>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Группа</th>
+                <th>Дата</th>
+                <th>Время</th>
+                <th>Команда 1</th>
+                <th>Итоговый счет</th>
+                <th>Команда 2</th>
+                <th>Стадион</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${matches.map((match) => {
+                const [team1Class, team2Class] = getTeamClasses(match.score);
+                return `
+                  <tr>
+                    <td>${match.group}</td>
+                    <td>${match.date}</td>
+                    <td>${match.time}</td>
+                    <td><span class="team-result ${team1Class}">${match.team1}</span></td>
+                    <td>${match.score}</td>
+                    <td><span class="team-result ${team2Class}">${match.team2}</span></td>
+                    <td>${match.stadium}</td>
+                  </tr>
+                `;
+              }).join('')}
+            </tbody>
+          </table>
+        `;
+      } catch (error) {
+        content.className = 'message';
+        content.textContent = error.message;
+      }
+    }
+
+    loadResults();
+  </script>
+</body>
+</html>

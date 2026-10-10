@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Lab 5 - Task 4: Контакты и Фильтр</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+
+        h1 { text-align: center; color: #333; }
+
+        /* Блоки */
+        .section {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        h2 { margin-top: 0; font-size: 1.2rem; color: #555; }
+
+        /* Формы (добавление и фильтр) */
+        .form-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: flex-end;
+            margin-bottom: 10px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            min-width: 120px;
+        }
+
+        label { font-size: 0.85rem; margin-bottom: 4px; color: #666; }
+        
+        input {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            color: white;
+            height: 38px; /* Выравнивание с инпутами */
+        }
+
+        .btn-add { background-color: #28a745; }
+        .btn-add:hover { background-color: #218838; }
+
+        .btn-filter { background-color: #007bff; }
+        .btn-filter:hover { background-color: #0056b3; }
+
+        .btn-reset { background-color: #6c757d; }
+        .btn-reset:hover { background-color: #5a6268; }
+
+        /* Таблица */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            font-size: 14px;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #eee;
+            font-weight: 600;
+        }
+
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        .no-data {
+            text-align: center;
+            color: #777;
+            padding: 20px;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Управление контактами</h1>
+
+    <!-- 1. Форма добавления -->
+    <div class="section">
+        <h2>Добавить контакт</h2>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Фамилия</label>
+                <input type="text" id="addSurname" placeholder="Иванов">
+            </div>
+            <div class="form-group">
+                <label>Имя</label>
+                <input type="text" id="addName" placeholder="Иван">
+            </div>
+            <div class="form-group">
+                <label>Возраст</label>
+                <input type="number" id="addAge" placeholder="25">
+            </div>
+            <div class="form-group">
+                <label>Телефон</label>
+                <input type="text" id="addPhone" placeholder="+7...">
+            </div>
+            <button class="btn-add" onclick="addContact()">Добавить</button>
+        </div>
+    </div>
+
+    <!-- 2. Форма фильтрации -->
+    <div class="section">
+        <h2>Фильтр</h2>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Поиск по фамилии</label>
+                <input type="text" id="filterSurname" placeholder="Часть фамилии">
+            </div>
+            <div class="form-group">
+                <label>Поиск по имени</label>
+                <input type="text" id="filterName" placeholder="Часть имени">
+            </div>
+            <div class="form-group">
+                <label>Поиск по возрасту</label>
+                <input type="text" id="filterAge" placeholder="Например: 2">
+            </div>
+            <div class="form-group">
+                <label>Поиск по телефону</label>
+                <input type="text" id="filterPhone" placeholder="Часть номера">
+            </div>
+            <div style="display:flex; gap:10px; align-items:flex-end;">
+                <button class="btn-filter" onclick="applyFilter()">Фильтр</button>
+                <button class="btn-reset" onclick="resetFilter()">Сброс</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. Таблица контактов -->
+    <div class="section">
+        <h2>Список контактов</h2>
+        <table id="contactsTable">
+            <thead>
+                <tr>
+                    <th>Фамилия</th>
+                    <th>Имя</th>
+                    <th>Возраст</th>
+                    <th>Телефон</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Сюда JS будет добавлять строки -->
+            </tbody>
+        </table>
+        <div id="noDataMsg" class="no-data" style="display:none;">Контакты не найдены</div>
+    </div>
+
+    <script>
+        "use strict";
+
+        // Хранилище всех контактов (изначально можно добавить пару тестовых)
+        let allContacts = [
+            { surname: "Иванов", name: "Иван", age: 25, phone: "+79001112233" },
+            { surname: "Петров", name: "Петр", age: 30, phone: "+79004445566" },
+            { surname: "Сидоров", name: "Алексей", age: 19, phone: "+79007778899" },
+            { surname: "Кузнецова", name: "Мария", age: 28, phone: "+79001234567" }
+        ];
+
+        // Ссылки на DOM элементы
+        const tbody = document.querySelector('#contactsTable tbody');
+        const noDataMsg = document.getElementById('noDataMsg');
+
+        // Поля добавления
+        const inpAddSur = document.getElementById('addSurname');
+        const inpAddName = document.getElementById('addName');
+        const inpAddAge = document.getElementById('addAge');
+        const inpAddPhone = document.getElementById('addPhone');
+
+        // Поля фильтра
+        const inpFilSur = document.getElementById('filterSurname');
+        const inpFilName = document.getElementById('filterName');
+        const inpFilAge = document.getElementById('filterAge');
+        const inpFilPhone = document.getElementById('filterPhone');
+
+        // 1. Функция отрисовки таблицы
+        function renderTable(data) {
+            tbody.innerHTML = ''; // Очистка
+
+            if (data.length === 0) {
+                noDataMsg.style.display = 'block';
+                return;
+            } else {
+                noDataMsg.style.display = 'none';
+            }
+
+            data.forEach(contact => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${escapeHtml(contact.surname)}</td>
+                    <td>${escapeHtml(contact.name)}</td>
+                    <td>${contact.age}</td>
+                    <td>${escapeHtml(contact.phone)}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // 2. Добавление контакта
+        function addContact() {
+            const surname = inpAddSur.value.trim();
+            const name = inpAddName.value.trim();
+            const age = inpAddAge.value.trim();
+            const phone = inpAddPhone.value.trim();
+
+            // Простая валидация
+            if (!surname || !name || !age || !phone) {
+                alert("Пожалуйста, заполните все поля!");
+                return;
+            }
+
+            const newContact = {
+                surname: surname,
+                name: name,
+                age: Number(age),
+                phone: phone
+            };
+
+            allContacts.push(newContact);
+            
+            // Очищаем поля ввода
+            inpAddSur.value = '';
+            inpAddName.value = '';
+            inpAddAge.value = '';
+            inpAddPhone.value = '';
+            inpAddSur.focus();
+
+            // Если активен фильтр, то применяем его снова к обновленному списку, 
+            // иначе рисуем всё. Но проще всегда перерисовывать полный список, 
+            // а если фильтр активен - пользователь сам нажмет "Фильтр" снова.
+            // Однако, по логике UI лучше сразу показать добавленный элемент, 
+            // если он проходит текущий фильтр, или сбросить фильтр.
+            // Для простоты: сбрасываем фильтр при добавлении, чтобы пользователь видел новый контакт.
+            resetFilter(); 
+            renderTable(allContacts);
+        }
+
+        // 3. Применение фильтра
+        function applyFilter() {
+            const fSur = inpFilSur.value.trim().toLowerCase();
+            const fName = inpFilName.value.trim().toLowerCase();
+            const fAge = inpFilAge.value.trim().toLowerCase();
+            const fPhone = inpFilPhone.value.trim().toLowerCase();
+
+            const filtered = allContacts.filter(contact => {
+                // Проверка: содержит ли поле подстроку из фильтра
+                const matchSur = contact.surname.toLowerCase().includes(fSur);
+                const matchName = contact.name.toLowerCase().includes(fName);
+                const matchAge = String(contact.age).includes(fAge);
+                const matchPhone = contact.phone.toLowerCase().includes(fPhone);
+
+                // Должны совпадать ВСЕ условия (логическое И)
+                return matchSur && matchName && matchAge && matchPhone;
+            });
+
+            renderTable(filtered);
+        }
+
+        // 4. Сброс фильтра
+        function resetFilter() {
+            inpFilSur.value = '';
+            inpFilName.value = '';
+            inpFilAge.value = '';
+            inpFilPhone.value = '';
+            renderTable(allContacts);
+        }
+
+        // Защита от XSS
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Инициализация при загрузке
+        renderTable(allContacts);
+
+        // Дополнительно: фильтрация по нажатию Enter в полях фильтра
+        [inpFilSur, inpFilName, inpFilAge, inpFilPhone].forEach(inp => {
+            inp.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') applyFilter();
+            });
+        });
+
+    </script>
+</body>
+</html>

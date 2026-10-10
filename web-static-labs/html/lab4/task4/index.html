@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8"/>
+    <title>Часы - 5 городов</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 50px;
+        }
+        select {
+            padding: 10px;
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+        .clock {
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .clock.selected {
+            background: #667eea;
+            color: white;
+        }
+        .time {
+            font-size: 24px;
+            font-weight: bold;
+            font-family: 'Courier New', monospace;
+        }
+    </style>
+</head>
+<body>
+    <h2>Мировое время</h2>
+    
+    <select id="citySelect">
+        <option value="moscow">Москва</option>
+        <option value="tokyo">Токио</option>
+        <option value="london">Лондон</option>
+        <option value="newyork">Нью-Йорк</option>
+        <option value="seattle">Сиэтл</option>
+    </select>
+    
+    <div id="clocks"></div>
+
+    <script src="clock.js" defer></script>
+</body>
+</html>

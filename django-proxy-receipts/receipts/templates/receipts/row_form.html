@@ -1,0 +1,17 @@
+<details class="work-row receipt-row" open>
+  <summary>Позиция <span class="row-number"></span>
+    <span class="row-calc grey-text text-darken-1">годно: <b class="calc-accepted">0</b> <span class="calc-unit"></span> · сумма: <b class="calc-total">0,00</b> руб.</span>
+  </summary>
+  {% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}{{ form.non_field_errors }}
+  <div class="form-grid">
+    {% include 'receipts/field.html' with field=form.product wide=True %}
+    {% include 'receipts/field.html' with field=form.grade %}
+    {% include 'receipts/field.html' with field=form.quantity %}
+    {% include 'receipts/field.html' with field=form.fitness %}
+    {% include 'receipts/field.html' with field=form.price %}
+    {% include 'receipts/field.html' with field=form.account %}
+    {% include 'receipts/field.html' with field=form.analytic_code %}
+    {% include 'receipts/field.html' with field=form.card_number %}
+  </div>
+  <label class="row-delete">{{ form.DELETE }}<span>Удалить позицию при сохранении</span></label>
+</details>

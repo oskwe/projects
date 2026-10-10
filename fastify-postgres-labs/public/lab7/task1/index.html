@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>ЛР7 Задание 1: Калькулятор</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .calculator {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            width: 320px;
+        }
+
+        h2 {
+            text-align: center;
+            color: #333;
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+
+        /* Экран калькулятора */
+        .display-container {
+            margin-bottom: 15px;
+        }
+
+        #display {
+            width: 100%;
+            height: 60px;
+            font-size: 32px;
+            text-align: right;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            background-color: #fafafa;
+            color: #333;
+            box-sizing: border-box;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        /* Сетка кнопок */
+        .buttons-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+
+        button {
+            padding: 15px;
+            font-size: 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: bold;
+            color: white;
+            user-select: none;
+        }
+
+        button:active {
+            transform: scale(0.95);
+        }
+
+        /* Цвета кнопок */
+        .btn-num { background-color: #e0e0e0; color: #333; }
+        .btn-num:hover { background-color: #d0d0d0; }
+
+        .btn-op { background-color: #ff9f43; }
+        .btn-op:hover { background-color: #f39c12; }
+
+        .btn-eq { 
+            background-color: #2ecc71; 
+            grid-column: span 2; /* Кнопка равно занимает 2 колонки */
+        }
+        .btn-eq:hover { background-color: #27ae60; }
+
+        .btn-clear { 
+            background-color: #e74c3c; 
+            grid-column: span 2; /* Кнопка сброса занимает 2 колонки */
+        }
+        .btn-clear:hover { background-color: #c0392b; }
+
+        /* Блок результата (ответ от сервера) */
+        #resultBox {
+            margin-top: 20px;
+            padding: 10px;
+            background: #e8f5e9;
+            border: 1px solid #c8e6c9;
+            border-radius: 6px;
+            text-align: center;
+            color: #2e7d32;
+            font-weight: bold;
+            display: none;
+            word-break: break-all;
+        }
+        
+        #resultBox.error {
+            background: #ffebee;
+            border-color: #ffcdd2;
+            color: #c62828;
+        }
+
+        .api-note {
+            margin-top: 15px;
+            font-size: 0.75rem;
+            color: #888;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="calculator">
+        <h2>Калькулятор</h2>
+
+        <!-- Экран -->
+        <div class="display-container">
+            <input type="text" id="display" readonly value="0">
+        </div>
+
+        <!-- Кнопки -->
+        <div class="buttons-grid">
+            <!-- Ряд 1 -->
+            <button class="btn-clear" onclick="clearDisplay()">C</button>
+            <button class="btn-op" onclick="appendOp('/')">/</button>
+            <button class="btn-op" onclick="appendOp('*')">×</button>
+
+            <!-- Ряд 2 -->
+            <button class="btn-num" onclick="appendNum('7')">7</button>
+            <button class="btn-num" onclick="appendNum('8')">8</button>
+            <button class="btn-num" onclick="appendNum('9')">9</button>
+            <button class="btn-op" onclick="appendOp('-')">-</button>
+
+            <!-- Ряд 3 -->
+            <button class="btn-num" onclick="appendNum('4')">4</button>
+            <button class="btn-num" onclick="appendNum('5')">5</button>
+            <button class="btn-num" onclick="appendNum('6')">6</button>
+            <button class="btn-op" onclick="appendOp('+')">+</button>
+
+            <!-- Ряд 4 -->
+            <button class="btn-num" onclick="appendNum('1')">1</button>
+            <button class="btn-num" onclick="appendNum('2')">2</button>
+            <button class="btn-num" onclick="appendNum('3')">3</button>
+            
+            <!-- Ряд 5 (хитрость сетки: кнопки будут переноситься) -->
+            <!-- Чтобы сетка была ровной 4x5, добавим точку и ноль правильно -->
+        </div>
+        
+        <!-- Дополнительный ряд для 0, точки и равно -->
+        <div class="buttons-grid" style="margin-top: 10px;">
+            <button class="btn-num" style="grid-column: span 2;" onclick="appendNum('0')">0</button>
+            <button class="btn-num" onclick="appendNum('.')">.</button>
+            <button class="btn-eq" onclick="calculate()">=</button>
+        </div>
+
+        <!-- Вывод результата -->
+        <div id="resultBox"></div>
+    </div>
+
+    <script>
+        const display = document.getElementById('display');
+        const resultBox = document.getElementById('resultBox');
+        
+        let currentInput = ''; // То, что пользователь вводит сейчас
+        let shouldResetDisplay = false; // Флаг: нужно ли очистить экран перед следующим числом
+
+        // Добавление цифры
+        function appendNum(num) {
+            if (shouldResetDisplay) {
+                currentInput = num;
+                shouldResetDisplay = false;
+            } else {
+                if (num === '.' && currentInput.includes('.')) return; // Защита от второй точки
+                if (currentInput === '0' && num !== '.') {
+                    currentInput = num;
+                } else {
+                    currentInput += num;
+                }
+            }
+            updateDisplay();
+        }
+
+        // Добавление операции
+        function appendOp(op) {
+            if (currentInput === '' && op !== '-') return; // Не даем начать с оператора (кроме минуса)
+            
+            // Если последний символ уже оператор, заменяем его
+            const lastChar = currentInput.slice(-1);
+            if (['+', '-', '*', '/'].includes(lastChar)) {
+                currentInput = currentInput.slice(0, -1) + op;
+            } else {
+                currentInput += op;
+            }
+            shouldResetDisplay = false;
+            updateDisplay();
+        }
+
+        // Очистка
+        function clearDisplay() {
+            currentInput = '';
+            display.value = '0';
+            resultBox.style.display = 'none';
+            resultBox.className = '';
+        }
+
+        // Обновление экрана
+        function updateDisplay() {
+            display.value = currentInput || '0';
+        }
+
+        // Вычисление (отправка на сервер)
+        async function calculate() {
+            if (!currentInput) return;
+
+            // Парсим выражение, чтобы найти последнее действие
+            // Ищем последний оператор (+, -, *, /)
+            // Регулярка ищет последний символ из набора
+            const match = currentInput.match(/.*([+\-*/])([^+\-*/]+)$/);
+            
+            if (!match) {
+                showError("Введите полное выражение (например, 2+2)");
+                return;
+            }
+
+            const operation = match[1];
+            const b = match[2];
+            // Часть A - это всё, что до последнего оператора
+            const a = currentInput.substring(0, currentInput.lastIndexOf(operation));
+
+            // Формируем URL для API
+            // Кодируем операцию, так как некоторые символы могут быть спецсимволами URL
+            let opCode = operation;
+            if (operation === '*') opCode = 'multiply';
+            if (operation === '/') opCode = 'divide';
+            if (operation === '+') opCode = 'add';
+            if (operation === '-') opCode = 'subtract';
+
+            const url = `/api/lab7/task1?operation=${opCode}&a=${encodeURIComponent(a)}&b=${encodeURIComponent(b)}`;
+
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+
+                resultBox.style.display = 'block';
+
+                if (!response.ok) {
+                    console.log('отправка запроса');
+                    const response = await fetch(url);
+                    const data = await response.json();
+                    resultBox.style.display="block";
+                    if(!response.ok){
+                        showError(data.error);
+                        console.warn('ошибка API',data.errror);
+                    }else{
+                        resultBox.className = '';
+                        resultBox.textContent='${data.a} ${data.operation} ${data.b}=${data.result}';
+                        currentInput = String(data.result);
+                        shouldResetDisplay=true;
+                        updateDisplay();
+                        console.log('ответ сервера:',data);
+                    }
+                }
+            } catch (err) {
+                showError("Ошибка сети: " + err.message);
+                console.error('ошибка сайта',err);
+            }
+        }
+
+        function showError(msg) {
+            resultBox.style.display = 'block';
+            resultBox.className = 'error';
+            resultBox.textContent = msg;
+        }
+    </script>
+</body>
+</html>

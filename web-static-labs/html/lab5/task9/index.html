@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Lab 5 - Task 9: Продвинутая JS Валидация</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            padding: 20px;
+            margin: 0;
+        }
+
+        .form-container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 450px;
+        }
+
+        h2 { text-align: center; color: #333; margin-bottom: 20px; }
+
+        .form-group { margin-bottom: 15px; position: relative; }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+            font-size: 14px;
+        }
+
+        input[type="text"],
+        input[type="password"],
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+            box-sizing: border-box;
+            transition: border-color 0.3s;
+        }
+
+        /* Стили состояний валидации */
+        input.valid, select.valid { border-color: #28a745; }
+        input.invalid, select.invalid { border-color: #dc3545; }
+
+        .error-message {
+            color: #dc3545;
+            font-size: 12px;
+            margin-top: 5px;
+            display: none; /* Скрыто по умолчанию */
+            min-height: 15px;
+        }
+        .error-message.visible { display: block; }
+
+        .hint-message {
+            color: #007bff;
+            font-size: 12px;
+            margin-top: 5px;
+            font-style: italic;
+            display: none;
+        }
+        .hint-message.visible { display: block; }
+
+        /* Чекбокс и адрес */
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .checkbox-group input { width: auto; }
+        .checkbox-group label { margin: 0; cursor: pointer; }
+
+        #addressGroup {
+            display: none; /* Скрыто по умолчанию */
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #eee;
+        }
+        #addressGroup.visible { display: block; }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background 0.2s;
+        }
+        button:hover { background-color: #0056b3; }
+
+    </style>
+</head>
+<body>
+
+<div class="form-container">
+    <h2>Регистрация с доставкой</h2>
+    
+    <!-- novalidate отключает стандартную валидацию браузера -->
+    <form id="registerForm" novalidate>
+        
+        <!-- Логин -->
+        <div class="form-group">
+            <label for="login">Логин *</label>
+            <input type="text" id="login" name="login" required minlength="5" maxlength="20">
+            <small class="error-message" id="loginError"></small>
+        </div>
+
+        <!-- Пароль -->
+        <div class="form-group">
+            <label for="password">Пароль *</label>
+            <input type="password" id="password" name="password" required minlength="5" maxlength="12">
+            <small class="error-message" id="passwordError"></small>
+        </div>
+
+        <!-- Подтверждение пароля -->
+        <div class="form-group">
+            <label for="confirmPassword">Подтверждение пароля *</label>
+            <input type="password" id="confirmPassword" name="confirmPassword" required>
+            <small class="error-message" id="confirmError"></small>
+        </div>
+
+        <!-- Возраст -->
+        <div class="form-group">
+            <label for="age">Возраст *</label>
+            <input type="number" id="age" name="age" required min="14" max="120" step="1">
+            <small class="error-message" id="ageError"></small>
+            <small class="hint-message" id="ageHint"></small>
+        </div>
+
+        <!-- Город -->
+        <div class="form-group">
+            <label for="city">Город *</label>
+            <select id="city" name="city" required>
+                <option value="" disabled selected>Не выбран</option>
+                <option value="moscow">Москва</option>
+                <option value="spb">Санкт-Петербург</option>
+                <option value="kazan">Казань</option>
+                <option value="ekb">Екатеринбург</option>
+            </select>
+            <small class="error-message" id="cityError"></small>
+        </div>
+
+        <!-- Чекбокс доставки -->
+        <div class="checkbox-group">
+            <input type="checkbox" id="deliveryCheck">
+            <label for="deliveryCheck">Доставить курьером</label>
+        </div>
+
+        <!-- Адрес (появляется динамически) -->
+        <div id="addressGroup">
+            <div class="form-group">
+                <label for="address">Адрес доставки *</label>
+                <input type="text" id="address" name="address" placeholder="Улица, дом, квартира">
+                <small class="error-message" id="addressError"></small>
+            </div>
+        </div>
+
+        <button type="submit">Зарегистрироваться</button>
+    </form>
+</div>
+
+<script>
+"use strict";
+
+// Элементы формы
+const form = document.getElementById('registerForm');
+const login = document.getElementById('login');
+const password = document.getElementById('password');
+const confirmPassword = document.getElementById('confirmPassword');
+const age = document.getElementById('age');
+const city = document.getElementById('city');
+const deliveryCheck = document.getElementById('deliveryCheck');
+const addressGroup = document.getElementById('addressGroup');
+const address = document.getElementById('address');
+
+// Элементы ошибок и подсказок
+const errors = {
+    login: document.getElementById('loginError'),
+    password: document.getElementById('passwordError'),
+    confirm: document.getElementById('confirmError'),
+    age: document.getElementById('ageError'),
+    city: document.getElementById('cityError'),
+    address: document.getElementById('addressError')
+};
+const ageHint = document.getElementById('ageHint');
+
+// --- 1. Логика отображения поля Адрес ---
+deliveryCheck.addEventListener('change', () => {
+    if (deliveryCheck.checked) {
+        addressGroup.classList.add('visible');
+        address.required = true; // Делаем обязательным
+    } else {
+        addressGroup.classList.remove('visible');
+        address.required = false; // Убираем обязательность
+        address.value = ''; // Очищаем значение
+        clearError(address, errors.address); // Сбрасываем ошибку
+    }
+});
+
+// --- 2. Функции валидации ---
+
+// Универсальная функция показа/скрытия ошибки
+function showError(input, errorEl, message) {
+    input.classList.remove('valid');
+    input.classList.add('invalid');
+    errorEl.textContent = message;
+    errorEl.classList.add('visible');
+    input.setCustomValidity(message); // Для интеграции с браузерной валидацией
+}
+
+function clearError(input, errorEl) {
+    input.classList.remove('invalid');
+    if (input.checkValidity()) {
+        input.classList.add('valid');
+    }
+    errorEl.textContent = '';
+    errorEl.classList.remove('visible');
+    input.setCustomValidity('');
+}
+
+// Валидация Логина
+function validateLogin() {
+    if (login.validity.valueMissing) {
+        showError(login, errors.login, "Введите логин.");
+    } else if (login.validity.tooShort) {
+        showError(login, errors.login, "Логин должен быть не менее 5 символов.");
+    } else if (login.validity.tooLong) {
+        showError(login, errors.login, "Логин не должен превышать 20 символов.");
+    } else {
+        clearError(login, errors.login);
+    }
+}
+
+// Валидация Пароля
+function validatePassword() {
+    if (password.validity.valueMissing) {
+        showError(password, errors.password, "Введите пароль.");
+    } else if (password.validity.tooShort) {
+        showError(password, errors.password, "Пароль должен быть от 5 до 12 символов.");
+    } else if (password.validity.tooLong) {
+        showError(password, errors.password, "Пароль не должен превышать 12 символов.");
+    } else {
+        clearError(password, errors.password);
+        // Если пароль изменился, нужно перепроверить подтверждение
+        if (confirmPassword.value !== '') validateConfirm();
+    }
+}
+
+// Валидация Подтверждения пароля
+function validateConfirm() {
+    if (confirmPassword.validity.valueMissing) {
+        showError(confirmPassword, errors.confirm, "Подтвердите пароль.");
+    } else if (password.value !== confirmPassword.value) {
+        showError(confirmPassword, errors.confirm, "Пароли не совпадают.");
+    } else {
+        clearError(confirmPassword, errors.confirm);
+    }
+}
+
+// Валидация Возраста (самая сложная часть)
+function validateAge() {
+    const val = parseInt(age.value);
+    
+    // Сброс подсказки
+    ageHint.classList.remove('visible');
+
+    if (age.validity.valueMissing) {
+        showError(age, errors.age, "Укажите возраст.");
+    } else if (age.validity.rangeUnderflow) {
+        showError(age, errors.age, "Возраст слишком мал (минимум 14).");
+    } else if (age.validity.rangeOverflow) {
+        showError(age, errors.age, "Возраст слишком велик (максимум 120).");
+    } else {
+        clearError(age, errors.age);
+        // Подсказка для несовершеннолетних (14-18 лет)
+        if (val >= 14 && val <= 18) {
+            ageHint.textContent = "Требуется согласие родителей";
+            ageHint.classList.add('visible');
+        }
+    }
+}
+
+// Валидация Города
+function validateCity() {
+    if (city.validity.valueMissing) {
+        showError(city, errors.city, "Выберите город из списка.");
+    } else {
+        clearError(city, errors.city);
+    }
+}
+
+// Валидация Адреса
+function validateAddress() {
+    // Проверяем только если поле видимо (доставка включена)
+    if (!deliveryCheck.checked) {
+        clearError(address, errors.address);
+        return;
+    }
+
+    if (address.validity.valueMissing) {
+        showError(address, errors.address, "Введите адрес доставки.");
+    } else {
+        clearError(address, errors.address);
+    }
+}
+
+// --- 3. Навешивание обработчиков событий (Live Validation) ---
+
+login.addEventListener('input', validateLogin);
+password.addEventListener('input', validatePassword);
+confirmPassword.addEventListener('input', validateConfirm);
+age.addEventListener('input', validateAge);
+city.addEventListener('change', validateCity);
+address.addEventListener('input', validateAddress);
+
+// --- 4. Обработка отправки формы ---
+
+form.addEventListener('submit', (e) => {
+    e.preventDefault(); // Останавливаем стандартную отправку
+
+    // Запускаем валидацию всех полей
+    validateLogin();
+    validatePassword();
+    validateConfirm();
+    validateAge();
+    validateCity();
+    validateAddress();
+
+    // Проверяем общую валидность формы
+    // form.checkValidity() вернет true, только если у всех полей setCustomValidity('')
+    if (form.checkValidity()) {
+        alert("Форма успешно заполнена! Данные готовы к отправке.");
+        // Здесь можно добавить реальную отправку через fetch()
+        // form.submit(); 
+    } else {
+        // Фокус на первом ошибочном поле
+        const firstInvalid = form.querySelector(':invalid');
+        if (firstInvalid) firstInvalid.focus();
+    }
+});
+
+</script>
+
+</body>
+</html>

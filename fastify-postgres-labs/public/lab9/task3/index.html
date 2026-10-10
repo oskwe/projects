@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ЛР9. Задание 3</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      color: #202124;
+      background: #f5f7fb;
+    }
+
+    main {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 32px 18px;
+    }
+
+    a {
+      color: #174ea6;
+    }
+
+    h1 {
+      margin: 18px 0 20px;
+      font-size: 28px;
+    }
+
+    .topbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .cart-link {
+      min-height: 40px;
+      padding: 9px 14px;
+      border-radius: 6px;
+      background: #174ea6;
+      color: #fff;
+      text-decoration: none;
+      box-sizing: border-box;
+    }
+
+    .products {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+    }
+
+    .product, .message {
+      padding: 16px;
+      border: 1px solid #d8dee9;
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    .product h2 {
+      margin: 0 0 10px;
+      font-size: 18px;
+    }
+
+    .price {
+      font-weight: 700;
+      color: #137333;
+    }
+
+    button {
+      min-height: 40px;
+      padding: 0 14px;
+      border: 0;
+      border-radius: 6px;
+      background: #174ea6;
+      color: #fff;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      background: #a8b0bd;
+      cursor: default;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <a href="/lab9/">Назад к ЛР9</a>
+    <div class="topbar">
+      <h1>Задание 3. Товары</h1>
+      <a class="cart-link" href="/lab9/task3/cart/">Корзина: <span id="cartCount">0</span></a>
+    </div>
+
+    <div id="products" class="message">Загрузка...</div>
+    <p id="status"></p>
+  </main>
+
+  <script>
+    const API = '/api/lab9';
+    const CART_KEY = 'lab9_cart';
+    let products = [];
+
+    const formatPrice = (cents) => (cents / 100).toLocaleString('ru-RU', {
+      style: 'currency',
+      currency: 'RUB',
+    });
+    const escapeHtml = (value) => String(value).replace(/[&<>"']/g, (char) => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#039;',
+    }[char]));
+
+    async function requestJson(url) {
+      const response = await fetch(url);
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.details || data.error || 'Ошибка запроса');
+      }
+      return data;
+    }
+
+    function getCart() {
+      return JSON.parse(localStorage.getItem(CART_KEY) || '[]');
+    }
+
+    function setCart(cart) {
+      localStorage.setItem(CART_KEY, JSON.stringify(cart));
+      renderCartCount();
+    }
+
+    function renderCartCount() {
+      const total = getCart().reduce((sum, item) => sum + item.quantity, 0);
+      document.getElementById('cartCount').textContent = total;
+    }
+
+    function addToCart(id) {
+      const product = products.find((item) => item.id === id);
+      const cart = getCart();
+      const current = cart.find((item) => item.id === id);
+      const currentQuantity = current ? current.quantity : 0;
+
+      if (currentQuantity >= 5) {
+        document.getElementById('status').textContent = 'В корзину можно добавить от 1 до 5 единиц одного товара.';
+        return;
+      }
+
+      if (currentQuantity >= product.amount) {
+        document.getElementById('status').textContent = 'На складе больше нет доступного количества.';
+        return;
+      }
+
+      if (current) {
+        current.quantity += 1;
+      } else {
+        cart.push({ id, quantity: 1 });
+      }
+      setCart(cart);
+      document.getElementById('status').textContent = 'Товар добавлен в корзину.';
+    }
+
+    function renderProducts() {
+      const root = document.getElementById('products');
+      root.className = 'products';
+      root.innerHTML = products.map((product) => `
+        <article class="product">
+          <h2>${escapeHtml(product.title)}</h2>
+          <p class="price">${formatPrice(product.price)}</p>
+          <p>Остаток: ${product.amount}</p>
+          <button type="button" onclick="addToCart(${product.id})" ${product.amount < 1 ? 'disabled' : ''}>Добавить в корзину</button>
+        </article>
+      `).join('');
+    }
+
+    async function loadProducts() {
+      products = await requestJson(`${API}/products`);
+      renderProducts();
+      renderCartCount();
+    }
+
+    loadProducts().catch((error) => {
+      document.getElementById('products').textContent = error.message;
+    });
+  </script>
+</body>
+</html>

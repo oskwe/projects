@@ -1,0 +1,24 @@
+[
+  {
+    "id": 1,
+    "lastname": "Ivanov",
+    "firstnameLetter": "I",
+    "surnameLetter": "I",
+    "gender": "male",
+    "faculty": "IT",
+    "projectName": "Demo",
+    "projectParticipant": "Участвует",
+    "createdAt": "2026-04-16T09:05:07.688Z"
+  },
+  {
+    "id": 2,
+    "lastname": "Иванов",
+    "firstnameLetter": "И",
+    "surnameLetter": "И",
+    "gender": "male",
+    "faculty": "Информационные технологии",
+    "projectName": "",
+    "projectParticipant": "Не участвует",
+    "createdAt": "2026-04-16T09:09:53.343Z"
+  }
+]

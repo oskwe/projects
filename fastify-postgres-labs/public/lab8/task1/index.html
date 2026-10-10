@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ЛР8. Задание 1</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      color: #202124;
+      background: #eef3f8;
+    }
+
+    main {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 32px 18px;
+    }
+
+    a {
+      color: #174ea6;
+    }
+
+    h1 {
+      margin: 18px 0 20px;
+      font-size: 28px;
+    }
+
+    form, .result {
+      padding: 22px;
+      border: 1px solid #d8dee9;
+      border-radius: 8px;
+      background: #fff;
+      box-sizing: border-box;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 700;
+    }
+
+    input[type="text"], select {
+      width: 100%;
+      min-height: 42px;
+      padding: 8px 10px;
+      border: 1px solid #c6ccd6;
+      border-radius: 6px;
+      font: inherit;
+      box-sizing: border-box;
+    }
+
+    .field {
+      margin-bottom: 16px;
+    }
+
+    .choice-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      min-height: 42px;
+      align-items: center;
+    }
+
+    .choice-row label {
+      margin: 0;
+      font-weight: 400;
+    }
+
+    .project-name {
+      display: none;
+    }
+
+    .project-name.visible {
+      display: block;
+    }
+
+    button {
+      min-height: 44px;
+      padding: 0 18px;
+      border: 0;
+      border-radius: 6px;
+      background: #137333;
+      color: #fff;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #0b5d28;
+    }
+
+    .result {
+      display: none;
+      margin-top: 18px;
+      background: #f8fbff;
+    }
+
+    .result.visible {
+      display: block;
+    }
+
+    .error {
+      color: #b3261e;
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <a href="/lab8/">Назад к ЛР8</a>
+    <h1>Задание 1. Форма студента</h1>
+
+    <form id="studentForm">
+      <div class="grid">
+        <div class="field">
+          <label for="surname">Фамилия</label>
+          <input type="text" id="surname" name="surname" required placeholder="Иванов">
+        </div>
+        <div class="field">
+          <label for="name">Имя</label>
+          <input type="text" id="name" name="name" required placeholder="Иван">
+        </div>
+        <div class="field">
+          <label for="patronymic">Отчество</label>
+          <input type="text" id="patronymic" name="patronymic" placeholder="Иванович">
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Пол</label>
+        <div class="choice-row">
+          <label><input type="radio" name="gender" value="male" checked> Мужской</label>
+          <label><input type="radio" name="gender" value="female"> Женский</label>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="faculty">Факультет</label>
+        <select id="faculty" name="faculty">
+          <option value="Информационные технологии">Информационные технологии</option>
+          <option value="Экономика">Экономика</option>
+          <option value="Юриспруденция">Юриспруденция</option>
+          <option value="Инженерия">Инженерия</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <div class="choice-row">
+          <label><input type="checkbox" id="hasProject" name="hasProject"> Участие в проекте</label>
+        </div>
+      </div>
+
+      <div class="field project-name" id="projectNameGroup">
+        <label for="projectName">Наименование проекта</label>
+        <input type="text" id="projectName" name="projectName" placeholder="Название проекта">
+      </div>
+
+      <button type="submit">Сохранить</button>
+    </form>
+
+    <section class="result" id="resultBox">
+      <h2>Ответ сервера</h2>
+      <p id="resultText"></p>
+    </section>
+  </main>
+
+  <script>
+    const form = document.getElementById('studentForm');
+    const hasProject = document.getElementById('hasProject');
+    const projectNameGroup = document.getElementById('projectNameGroup');
+    const resultBox = document.getElementById('resultBox');
+    const resultText = document.getElementById('resultText');
+
+    hasProject.addEventListener('change', () => {
+      projectNameGroup.classList.toggle('visible', hasProject.checked);
+    });
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      resultText.className = '';
+      resultText.textContent = 'Отправка...';
+      resultBox.classList.add('visible');
+
+      const data = new FormData(form);
+      const query = new URLSearchParams({
+        surname: data.get('surname').trim(),
+        name: data.get('name').trim(),
+        patronymic: data.get('patronymic').trim(),
+        gender: data.get('gender'),
+        faculty: data.get('faculty'),
+        hasProject: hasProject.checked ? 'true' : 'false',
+        projectName: data.get('projectName').trim(),
+      });
+
+      try {
+        const initialsResponse = await fetch(`/api/lab8/task1/makeInitials?${query.toString()}`);
+        const initials = await initialsResponse.json();
+        if (!initialsResponse.ok) {
+          throw new Error(initials.message || 'Ошибка валидации ФИО');
+        }
+
+        const statusResponse = await fetch(`/api/lab8/task1/makeProjectStatus?${query.toString()}`);
+        const status = await statusResponse.json();
+        if (!statusResponse.ok) {
+          throw new Error(status.message || 'Ошибка сохранения формы');
+        }
+
+        resultText.textContent = `ID: ${status.id}; фамилия: ${status.lastname}; инициалы: ${initials.firstnameLetter}.${initials.surnameLetter ? initials.surnameLetter + '.' : ''}; проект: ${status.projectParticipant}.`;
+      } catch (error) {
+        resultText.className = 'error';
+        resultText.textContent = error.message;
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,29 @@
+.menu-item {
+    background-color: white;
+    transform: scale(1.01);
+    /* border: 3px solid black; */
+    color: black !important; /* Черный текст */
+    opacity: 1;
+
+}
+
+
+.link-item {
+    background-color: white; /* Белый фон */
+    color: black !important; /* Черный текст */
+    z-index: 4000; /* Высокий z-index для отрисовки поверх других элементов */
+    position: relative; /* Чтобы z-index применялся */
+    padding: 0px 40px; /* Увеличенные внутренние отступы для удобства нажатия */
+    text-decoration: none; /* Убираем подчеркивание */
+    display: flex; /* Используем Flexbox */
+    align-items: center; /* Вертикальное выравнивание по центру */
+    justify-content: center; /* Горизонтальное выравнивание по центру */
+    width: 100px;
+    border-radius: 30%;
+}
+
+.link-item:hover{ 
+    background-color: #807e7e !important;
+    color: white !important; /* Цвет текста становится белым при наведении */ 
+    opacity: 1 !important;
+}

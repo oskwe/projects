@@ -1,0 +1,129 @@
+{% load static versioned_static %}<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Акт оприходования № {{ act.number }} — форма М-35</title>
+  {% if download %}<style>{{ inline_css|safe }}</style>{% else %}<link rel="stylesheet" href="{% versioned_static 'css/receipt-print.css' %}">{% endif %}
+</head>
+<body>
+<section class="paper">
+  <div class="form-source">Унифицированная форма № М-35<br>Утверждена постановлением Госкомстата России<br>от 30.10.97 № 71а</div>
+
+  <div class="head">
+    <div class="head-left">
+      <p class="field"><span class="value">{{ act.snapshot.organization.name }}{% if act.snapshot.organization.address %}, {{ act.snapshot.organization.address }}{% endif %}</span><small>организация</small></p>
+      <p class="field"><span class="value">{{ act.snapshot.department.name|default:"&nbsp;" }}</span><small>структурное подразделение</small></p>
+      <p class="field inline">Вид деятельности <span class="value">{{ act.activity|default:"&nbsp;" }}</span></p>
+    </div>
+    <table class="codes">
+      <tr><td class="blank-cell"></td><th>Коды</th></tr>
+      <tr><td class="label">Форма по ОКУД</td><td>{{ act.okud }}</td></tr>
+      <tr><td class="label">по ОКПО</td><td>{{ act.snapshot.organization.okpo }}</td></tr>
+      <tr><td class="label">&nbsp;</td><td></td></tr>
+      <tr><td class="label">Вид операции</td><td>{{ act.operation_code }}</td></tr>
+    </table>
+  </div>
+
+  <div class="title-row">
+    <div class="approve">
+      <b>УТВЕРЖДАЮ</b>
+      <p>Руководитель</p>
+      <p class="sign-line"><span class="w-post">&nbsp;</span><span class="w-sign">&nbsp;</span><span class="w-name">{{ act.snapshot.organization.chief }}</span></p>
+      <small class="sign-hint"><span class="w-post">должность</span><span class="w-sign">подпись</span><span class="w-name">расшифровка подписи</span></small>
+      <p>{% if act.approval_date %}«{{ act.approval_date|date:'d' }}» {{ act.approval_date|date:'E Y' }} г.{% else %}«____» ______________ 20___ г.{% endif %}</p>
+    </div>
+    <div class="doc-title">
+      <table class="numdate"><tr><th>Номер документа</th><th>Дата составления</th></tr><tr><td>{{ act.number }}</td><td>{{ act.date|date:'d.m.Y' }}</td></tr></table>
+      <h1>АКТ<br>ОБ ОПРИХОДОВАНИИ МАТЕРИАЛЬНЫХ ЦЕННОСТЕЙ,<br>ПОЛУЧЕННЫХ ПРИ РАЗБОРКЕ И ДЕМОНТАЖЕ ЗДАНИЙ И СООРУЖЕНИЙ</h1>
+    </div>
+  </div>
+
+  <div class="parties">
+    <p>Заказчик <span class="value">{{ act.snapshot.organization.name }}</span></p>
+    <p>Подрядчик <span class="value">{{ act.snapshot.contractor.name }}</span></p>
+    <p>Объект разборки (демонтажа) <span class="value">{{ act.object_name }}</span></p>
+    <p>Основание <span class="value">{{ act.basis|default:"&nbsp;" }}</span> · Место хранения <span class="value">{{ act.snapshot.warehouse.name }}{% if act.snapshot.warehouse.address %}, {{ act.snapshot.warehouse.address }}{% endif %}</span></p>
+  </div>
+  <p class="commission">Комиссия в составе: председателя — {{ act.snapshot.chairman.post }} {{ act.snapshot.chairman.full_name }}; членов комиссии — {{ act.snapshot.member_first.post }} {{ act.snapshot.member_first.full_name }}{% if act.snapshot.member_second.full_name %}, {{ act.snapshot.member_second.post }} {{ act.snapshot.member_second.full_name }}{% endif %}, представителя подрядчика — {{ act.contractor_representative }} произвела осмотр материальных ценностей, полученных при разборке (демонтаже), и установила их количество, годность и стоимость:</p>
+
+  <table class="items">
+    <colgroup><col style="width:6%"><col style="width:6%"><col style="width:22%"><col style="width:7%"><col style="width:4%"><col style="width:5%"><col style="width:8%"><col style="width:6%"><col style="width:8%"><col style="width:8%"><col style="width:11%"><col style="width:9%"></colgroup>
+    <thead>
+      <tr>
+        <th colspan="2">Корреспондирующий счёт</th>
+        <th colspan="2">Материальные ценности</th>
+        <th colspan="2">Единица измерения</th>
+        <th rowspan="2">Количество, полученное при разборке</th>
+        <th rowspan="2">Процент годности</th>
+        <th rowspan="2">Количество, принятое к учёту</th>
+        <th rowspan="2">Цена, руб. коп.</th>
+        <th rowspan="2">Сумма, руб. коп.</th>
+        <th rowspan="2">Порядковый номер записи по складской картотеке</th>
+      </tr>
+      <tr>
+        <th>счёт, субсчёт</th><th>код аналитического учёта</th>
+        <th>наименование, сорт, марка, размер</th><th>номенклатурный номер</th>
+        <th>код по ОКЕИ</th><th>наименование</th>
+      </tr>
+      <tr class="nums">{% for n in numbers %}<th>{{ n }}</th>{% endfor %}</tr>
+    </thead>
+    <tbody>
+      {% for row in rows %}
+      <tr>
+        <td>{{ row.account }}</td><td>{{ row.analytic_code }}</td>
+        <td class="left">{{ row.name_snapshot }}{% if row.grade %}, {{ row.grade }}{% endif %}</td>
+        <td>{{ row.nomenclature_snapshot }}</td><td>{{ row.unit_code_snapshot }}</td><td>{{ row.unit_snapshot }}</td>
+        <td class="num">{{ row.quantity|floatformat:"-3" }}</td><td class="num">{{ row.fitness|floatformat:"-2" }}</td>
+        <td class="num">{{ row.accepted_quantity|floatformat:"-3" }}</td><td class="num">{{ row.price|floatformat:"2g" }}</td>
+        <td class="num">{{ row.total|floatformat:"2g" }}</td><td>{{ row.card_number }}</td>
+      </tr>
+      {% endfor %}
+      {% for _ in blank_rows %}<tr class="blank">{% for n in numbers %}<td>&nbsp;</td>{% endfor %}</tr>{% endfor %}
+      <tr class="total">
+        <td colspan="6" class="left">Итого</td>
+        <td class="num">{% if totals.single_unit %}{{ totals.quantity|floatformat:"-3" }}{% else %}×{% endif %}</td><td>×</td>
+        <td class="num">{% if totals.single_unit %}{{ totals.accepted_quantity|floatformat:"-3" }}{% else %}×{% endif %}</td><td>×</td>
+        <td class="num">{{ totals.total|floatformat:"2g" }}</td><td>×</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="summary">
+    <p>Всего по акту оприходовано ценностей наименований: <b>{{ totals.positions }}</b> на сумму <span class="value wide">{{ totals.in_words }}</span></p>
+    <small class="under">прописью</small>
+    {% if act.note %}<p>Примечание: {{ act.note }}</p>{% endif %}
+  </div>
+
+  <div class="signatures">
+    <div class="sig-col customer">
+      <h3>Представители заказчика</h3>
+      <p class="sig">Председатель комиссии <span class="line">{{ act.snapshot.chairman.post }}</span><span class="line short"></span><span class="line">{{ act.snapshot.chairman.short_name }}</span></p>
+      <small class="sig-hint">должность · подпись · расшифровка подписи</small>
+      <p class="sig">Член комиссии <span class="line">{{ act.snapshot.member_first.post }}</span><span class="line short"></span><span class="line">{{ act.snapshot.member_first.short_name }}</span></p>
+      <small class="sig-hint">должность · подпись · расшифровка подписи</small>
+      {% if act.snapshot.member_second.full_name %}<p class="sig">Член комиссии <span class="line">{{ act.snapshot.member_second.post }}</span><span class="line short"></span><span class="line">{{ act.snapshot.member_second.short_name }}</span></p>
+      <small class="sig-hint">должность · подпись · расшифровка подписи</small>{% endif %}
+      <div class="mp">М.П.</div>
+    </div>
+    <div class="sig-col contractor">
+      <h3>Представитель подрядчика</h3>
+      <p class="sig"><span class="line wide">{{ act.contractor_representative }}</span><span class="line short"></span></p>
+      <small class="sig-hint">должность, фамилия, инициалы · подпись</small>
+      <div class="mp">М.П.</div>
+      <h3 class="accepted">Материальные ценности принял на хранение</h3>
+      <p class="sig">Кладовщик <span class="line short"></span><span class="line">{{ act.snapshot.storekeeper.short_name }}</span></p>
+      <small class="sig-hint">подпись · расшифровка подписи</small>
+      <p>«{{ act.date|date:'d' }}» {{ act.date|date:'E Y' }} г.</p>
+    </div>
+  </div>
+  <footer>Акт № {{ act.number }} от {{ act.date|date:'d.m.Y' }} · {{ act.snapshot.organization.name }}</footer>
+</section>
+{% if not download %}
+<div class="doc-actions no-print">
+  <button type="button" class="btn btn-print" onclick="window.print()">Печать</button>
+  <a class="btn btn-back" href="{% url 'receipts:detail' act.pk %}">Назад</a>
+  <a class="btn btn-save" href="?download=1" title="Скачать документ файлом">Сохранить</a>
+</div>
+{% endif %}
+</body>
+</html>

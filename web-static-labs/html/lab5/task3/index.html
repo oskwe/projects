@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Lab 5 - Task 3: Цветная сетка</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+
+        h1 { margin-bottom: 10px; font-size: 1.5rem; }
+
+        /* Кнопка */
+        button {
+            padding: 8px 16px;
+            font-size: 14px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            transition: background-color 0.2s;
+        }
+        button:hover { background-color: #0056b3; }
+
+        /* Сетка 10x10 */
+        #gridContainer {
+            display: grid;
+            grid-template-columns: repeat(10, 15px);
+            grid-template-rows: repeat(10, 15px);
+            gap: 1px; 
+            background-color: #ccc; 
+            border: 1px solid #999;
+            margin-bottom: 20px;
+        }
+
+        .cell {
+            width: 15px;
+            height: 15px;
+            background-color: #ffffff; /* Изначально белые */
+            cursor: pointer;
+            box-sizing: border-box;
+        }
+        
+        /* Убираем выделение текста при кликах */
+        .cell {
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        /* Таблица статистики */
+        table {
+            border-collapse: collapse;
+            background: white;
+            font-size: 14px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            min-width: 200px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px 12px;
+            text-align: left;
+        }
+        th { background-color: #eee; }
+        
+        /* Блок предпросмотра цвета в таблице */
+        .color-preview {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 1px solid #ccc;
+            vertical-align: middle;
+            margin-right: 10px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Задание 3: Сетка и статистика</h1>
+
+    <button id="paintBtn">Раскрасить</button>
+
+    <!-- Контейнер для сетки -->
+    <div id="gridContainer"></div>
+
+    <!-- Таблица статистики -->
+    <table id="statsTable">
+        <thead>
+            <tr>
+                <th>Цвет</th>
+                <th>Количество</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Сюда JS будет вставлять строки -->
+        </tbody>
+    </table>
+
+    <script>
+        "use strict";
+
+        // 1. ПАЛИТРА ЦВЕТОВ СТРОГО ИЗ ЗАДАНИЯ
+        const PALETTE = [
+            '#780000', // Темно-красный
+            '#c1121f', // Ярко-красный
+            '#fdf0d5', // Бежевый/Кремовый
+            '#003049', // Темно-синий
+            '#669bbc'  // Голубой
+        ];
+
+        const COLOR_WHITE = '#ffffff';
+        const COLOR_BLACK = '#000000';
+        
+        const GRID_SIZE = 10; // 10x10
+        
+        const gridContainer = document.getElementById('gridContainer');
+        const paintBtn = document.getElementById('paintBtn');
+        const statsBody = document.querySelector('#statsTable tbody');
+
+        let cells = [];
+
+        // 2. Инициализация сетки
+        function initGrid() {
+            gridContainer.innerHTML = '';
+            cells = [];
+            
+            for (let i = 0; i < GRID_SIZE * GRID_SIZE; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+                
+                // Начальное состояние: белый цвет
+                cell.dataset.color = COLOR_WHITE;
+                cell.style.backgroundColor = COLOR_WHITE;
+
+                // ЛЕВЫЙ КЛИК -> Белый
+                cell.addEventListener('click', () => {
+                    setColor(cell, COLOR_WHITE);
+                });
+
+                // ПРАВЫЙ КЛИК -> Черный
+                cell.addEventListener('contextmenu', (e) => {
+                    e.preventDefault(); // Запрещаем контекстное меню
+                    setColor(cell, COLOR_BLACK);
+                });
+
+                gridContainer.appendChild(cell);
+                cells.push(cell);
+            }
+            updateStats();
+        }
+
+        // Вспомогательная функция установки цвета
+        function setColor(cell, color) {
+            cell.dataset.color = color;
+            cell.style.backgroundColor = color;
+            updateStats();
+        }
+
+        // 3. Функция раскраски (СЛУЧАЙНЫЕ ЦВЕТА при каждом нажатии)
+        function paintRandom() {
+            cells.forEach(cell => {
+                // Выбираем случайный индекс от 0 до длины палитры
+                const randomIndex = Math.floor(Math.random() * PALETTE.length);
+                const randomColor = PALETTE[randomIndex];
+                
+                setColor(cell, randomColor);
+            });
+        }
+
+        // 4. Подсчет статистики и обновление таблицы
+        function updateStats() {
+            const counts = {};
+
+            // Инициализируем счетчики для всех возможных цветов (палитра + белый + черный)
+            const allColors = [...PALETTE, COLOR_WHITE, COLOR_BLACK];
+            allColors.forEach(color => counts[color] = 0);
+
+            // Проходим по всем клеткам и считаем
+            cells.forEach(cell => {
+                const color = cell.dataset.color;
+                if (counts.hasOwnProperty(color)) {
+                    counts[color]++;
+                }
+            });
+
+            // Очистка таблицы
+            statsBody.innerHTML = '';
+
+            // Порядок вывода: сначала цвета палитры, потом белый, потом черный
+            // Фильтруем: показываем только те цвета, количество которых > 0
+            const displayOrder = [...PALETTE, COLOR_WHITE, COLOR_BLACK];
+
+            displayOrder.forEach(color => {
+                const count = counts[color];
+                
+                if (count > 0) {
+                    const row = document.createElement('tr');
+                    
+                    // Ячейка с цветом (блок + название)
+                    const colorCell = document.createElement('td');
+                    
+                    const preview = document.createElement('span');
+                    preview.className = 'color-preview';
+                    preview.style.backgroundColor = color;
+                    
+                    // Для белого и черного добавим тонкую рамку, чтобы было видно на любом фоне
+                    if (color === COLOR_WHITE || color === COLOR_BLACK) {
+                        preview.style.border = '1px solid #999';
+                    }
+
+                    const label = document.createElement('span');
+                    label.textContent = getColorName(color);
+                    label.style.verticalAlign = 'middle';
+                    
+                    colorCell.appendChild(preview);
+                    colorCell.appendChild(label);
+                    
+                    // Ячейка количества
+                    const countCell = document.createElement('td');
+                    countCell.textContent = count;
+                    countCell.style.fontWeight = 'bold';
+
+                    row.appendChild(colorCell);
+                    row.appendChild(countCell);
+                    statsBody.appendChild(row);
+                }
+            });
+        }
+
+        // Хелпер для имен цветов
+        function getColorName(hex) {
+            if (hex === COLOR_WHITE) return 'Белый';
+            if (hex === COLOR_BLACK) return 'Черный';
+            return hex; // Для палитры оставляем код цвета, так как имен нет в задании
+        }
+
+        // Привязка события к кнопке
+        paintBtn.addEventListener('click', paintRandom);
+
+        // Запуск при загрузке
+        initGrid();
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Lab 6 - Task 4: История посещений</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            font-family: sans-serif;
+            max-width: 600px;
+            margin: 40px auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+
+        h1 { color: #333; text-align: center; font-size: 1.5rem; }
+        p { text-align: center; color: #666; margin-bottom: 20px; }
+
+        .history-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        li {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        li:last-child { border-bottom: none; }
+
+        .visit-index {
+            font-weight: bold;
+            color: #007bff;
+            margin-right: 10px;
+            min-width: 20px;
+        }
+
+        .visit-date {
+            flex-grow: 1;
+            font-family: monospace;
+            font-size: 14px;
+        }
+
+        .empty-msg {
+            text-align: center;
+            color: #999;
+            font-style: italic;
+            padding: 20px;
+        }
+
+        .clear-btn {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .clear-btn:hover { background-color: #c82333; }
+
+    </style>
+</head>
+<body>
+
+    <h1>История посещений</h1>
+    <p>Здесь отображаются последние 5 заходов на эту страницу.</p>
+
+    <div class="history-container">
+        <ul id="historyList">
+            <!-- Сюда JS добавит элементы -->
+        </ul>
+        <div id="emptyMsg" class="empty-msg" style="display: none;">История пуста</div>
+    </div>
+
+    <button id="clearBtn" class="clear-btn">Очистить историю</button>
+
+    <script>
+        "use strict";
+
+        const historyList = document.getElementById('historyList');
+        const emptyMsg = document.getElementById('emptyMsg');
+        const clearBtn = document.getElementById('clearBtn');
+        
+        const STORAGE_KEY = 'visitHistory';
+        const MAX_VISITS = 5;
+
+        // Функция получения истории из localStorage
+        function getHistory() {
+            const stored = localStorage.getItem(STORAGE_KEY);
+            if (stored) {
+                try {
+                    return JSON.parse(stored);
+                } catch (e) {
+                    console.error('Ошибка парсинга истории', e);
+                    return [];
+                }
+            }
+            return [];
+        }
+
+        // Функция сохранения истории в localStorage
+        function saveHistory(historyArray) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(historyArray));
+        }
+
+        // Функция отрисовки списка
+        function renderHistory(historyArray) {
+            historyList.innerHTML = '';
+
+            if (historyArray.length === 0) {
+                emptyMsg.style.display = 'block';
+                return;
+            } else {
+                emptyMsg.style.display = 'none';
+            }
+
+            historyArray.forEach((visit, index) => {
+                const li = document.createElement('li');
+                
+                const spanIndex = document.createElement('span');
+                spanIndex.className = 'visit-index';
+                spanIndex.textContent = `${index + 1}.`;
+
+                const spanDate = document.createElement('span');
+                spanDate.className = 'visit-date';
+                spanDate.textContent = visit.formatted;
+
+                li.appendChild(spanIndex);
+                li.appendChild(spanDate);
+                historyList.appendChild(li);
+            });
+        }
+
+        // Основная логика при загрузке страницы
+        function init() {
+            let history = getHistory();
+
+            // Создаем запись о текущем посещении
+            const now = new Date();
+            const newVisit = {
+                timestamp: now.toISOString(), // Для сортировки (если понадобится)
+                formatted: now.toLocaleString('ru-RU') // Красивый формат для вывода
+            };
+
+            // Добавляем новое посещение в начало массива
+            history.unshift(newVisit);
+
+            // Оставляем только последние 5 записей
+            if (history.length > MAX_VISITS) {
+                history = history.slice(0, MAX_VISITS);
+            }
+
+            // Сохраняем обновленный массив
+            saveHistory(history);
+
+            // Отрисовываем
+            renderHistory(history);
+        }
+
+        // Обработчик кнопки очистки
+        clearBtn.addEventListener('click', () => {
+            if (confirm('Вы уверены, что хотите очистить всю историю посещений?')) {
+                localStorage.removeItem(STORAGE_KEY);
+                renderHistory([]); // Очищаем интерфейс сразу
+            }
+        });
+
+        // Запуск при загрузке
+        window.addEventListener('DOMContentLoaded', init);
+
+    </script>
+</body>
+</html>

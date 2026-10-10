@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ЛР12. Задание 2</title>
+  <link rel="stylesheet" href="/lab12/style.css">
+</head>
+<body>
+  <header>
+    <h1>Задание 2. API-тесты</h1>
+    <nav class="nav">
+      <a href="/lab12/">К ЛР12</a>
+      <a href="/lab12/task1/">Задание 1</a>
+      <a href="/lab12/task3/">Задание 3</a>
+    </nav>
+  </header>
+  <main>
+    <section class="panel">
+      <h2>Проверка эндпойнтов</h2>
+      <p class="muted">Карточки ниже формируются реальными запросами fetch к локальному API. Они повторяют набор успешных и неуспешных проверок из методички.</p>
+      <div class="actions">
+        <button class="primary" type="button" id="runTests">Запустить тесты</button>
+      </div>
+      <div id="summary" class="message"></div>
+    </section>
+    <section id="tests" class="test-grid"></section>
+  </main>
+  <script src="/lab12/task2/app.js"></script>
+</body>
+</html>

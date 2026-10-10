@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>ЛР11. Задание 2</title>
+    <link rel="stylesheet" href="/lab11/style.css">
+</head>
+<body>
+    <header>
+        <h1>Задание 2: управление пользователями</h1>
+        <nav class="nav">
+            <a href="/lab11/">К ЛР11</a>
+            <a href="/lab11/task1/">Задание 1</a>
+            <a href="/lab11/task3/">Задание 3</a>
+        </nav>
+    </header>
+    <main>
+        <section class="panel">
+            <h2>Доступ</h2>
+            <p id="roleInfo" class="muted"></p>
+            <div class="actions">
+                <button type="button" id="refreshButton">Обновить список</button>
+                <a class="button" href="/lab11/task1/">Войти или получить токен</a>
+            </div>
+        </section>
+
+        <section class="panel admin-only" id="editorPanel" hidden>
+            <h2 id="editorTitle">Создание пользователя</h2>
+            <form id="userForm">
+                <input type="hidden" name="id">
+                <div class="form-grid">
+                    <div><label>Login</label><input name="login"></div>
+                    <div><label>Password</label><input name="password" type="password"></div>
+                    <div><label>Full name</label><input name="full_name"></div>
+                    <div><label>Email</label><input name="email"></div>
+                    <div>
+                        <label>Role</label>
+                        <select name="role">
+                            <option value="user">authenticated user</option>
+                            <option value="admin">admin</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="actions">
+                    <button class="primary" type="submit">Сохранить</button>
+                    <button type="button" id="resetFormButton">Сбросить</button>
+                </div>
+            </form>
+        </section>
+
+        <section class="panel">
+            <h2>Пользователи</h2>
+            <div id="message" class="message"></div>
+            <div id="usersTable"></div>
+        </section>
+
+        <section class="panel auth-only" id="detailsPanel" hidden>
+            <h2>Карточка пользователя</h2>
+            <pre id="userDetails"></pre>
+        </section>
+    </main>
+    <script src="/lab11/task2/app.js"></script>
+</body>
+</html>

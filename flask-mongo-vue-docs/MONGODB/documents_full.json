@@ -1,0 +1,66 @@
+[{
+  "_id": {
+    "$oid": "682d76c914479facc4873e08"
+  },
+  "supplier_organization": {
+    "$oid": "6829f4c70998da7a7a70c0ac"
+  },
+  "individual": {
+    "$oid": "6829e8610998da7a7a70c0aa"
+  },
+  "period": {
+    "from": {
+      "$date": "2025-05-02T00:00:00.000Z"
+    },
+    "until": {
+      "$date": "2025-05-10T00:00:00.000Z"
+    }
+  },
+  "items": [
+    {
+      "count": 10,
+      "item": {
+        "$oid": "6829f52f0998da7a7a70c0ad"
+      }
+    },
+    {
+      "count": 3,
+      "item": {
+        "$oid": "6829f52f0998da7a7a70c0ae"
+      }
+    }
+  ]
+},
+{
+  "_id": {
+    "$oid": "682d797f22c20c725f072e80"
+  },
+  "supplier_organization": {
+    "$oid": "6829f4c70998da7a7a70c0ac"
+  },
+  "individual": {
+    "$oid": "6829e8610998da7a7a70c0aa"
+  },
+  "period": {
+    "from": {
+      "$date": "2025-06-02T00:00:00.000Z"
+    },
+    "until": {
+      "$date": "2025-06-10T00:00:00.000Z"
+    }
+  },
+  "items": [
+    {
+      "count": 1,
+      "item": {
+        "$oid": "6829f52f0998da7a7a70c0ad"
+      }
+    },
+    {
+      "count": 9,
+      "item": {
+        "$oid": "6829f52f0998da7a7a70c0ae"
+      }
+    }
+  ]
+}]

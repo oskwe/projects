@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% block title %}Удаление акта № {{ object.number }}{% endblock %}
+{% block content %}
+<h4>Удалить акт оприходования № {{ object.number }}?</h4>
+<form method="post">
+  {% csrf_token %}
+  <p>Акт от {{ object.date|date:'d.m.Y' }} и все его позиции будут удалены. Справочники не изменятся.</p>
+  <button class="btn red"><i class="material-icons left">delete</i>Удалить</button>
+  <a href="{% url 'receipts:list' %}" class="btn grey">Отмена</a>
+</form>
+{% endblock %}

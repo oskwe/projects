@@ -1,0 +1,26 @@
+[{
+  "_id": {
+    "$oid": "682d76c914479facc4873e08"
+  },
+  "number": "002",
+  "date": {
+    "$date": "2025-05-01T00:00:00.000Z"
+  },
+  "organization": {
+    "$oid": "6829f4c70998da7a7a70c0ab"
+  },
+  "type": "proxy"
+},
+{
+  "_id": {
+    "$oid": "682d797f22c20c725f072e80"
+  },
+  "number": "003",
+  "date": {
+    "$date": "2025-05-01T00:00:00.000Z"
+  },
+  "organization": {
+    "$oid": "6829f4c70998da7a7a70c0ab"
+  },
+  "type": "proxy"
+}]

@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8"> 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Задание 7: Grid и Media Queries</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+        }
+        .grid-container {
+            display: grid;
+            background-color: #fff;
+            width: 100%;
+            max-width: 1280px;
+            min-height: 1400px; 
+            
+            /* (мобильные < 600px) - 1 колонка */
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+
+        /* Общие стили  */
+        .item {
+            width: 100%;
+            height: 100%;
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2rem;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+
+        /*ЦВЕТА*/
+        .header-top { background-color: #e0e0e0; color: #555; text-shadow: none; justify-content: flex-start; padding-left: 10px; font-size: 0.9rem;}
+        .blue-block { background-color: #6495ED; }       
+        .teal-block { background-color: #00CED1; }       
+        .green-block { background-color: #008B8B; }      
+        .orange-block { background-color: #FFA07A; }     
+        .purple-block { background-color: #9932CC; }     
+        .yellow-block { background-color: #FFD700; color: #333; text-shadow: none; } 
+        .footer-block { background-color: #483D8B; }     
+        /* 1. ПЛАНШЕТЫ (от 600px до 1024px) */
+        @media (min-width: 600px) {
+            .grid-container {
+                grid-template-columns: repeat(6, 1fr);
+                gap: 15px;
+            }
+
+            /* Перераспределяем блоки */
+            .header-top { grid-column: span 6; height: 40px; }
+            .blue-block { grid-column: span 6; height: 200px; }
+            .teal-block { grid-column: span 3; height: 200px; }
+            .green-block { grid-column: span 3; height: 200px; }
+            .orange-block { grid-column: span 6; height: 200px; display: none; } 
+            .teal-block { grid-column: span 3; height: 200px; }
+            .green-block { grid-column: span 3; height: 200px; display: none;  }
+            .orange-block { display: none; }
+            .purple-block { grid-column: span 3; height: 400px; }
+            .yellow-block { grid-column: span 3; height: 400px; }
+            .footer-block { grid-column: span 6; height: 150px; }
+        }
+
+        /* 2. ДЕСКТОП (от 1025px и выше) */
+        @media (min-width: 1025px) {
+            .grid-container {
+                grid-template-columns: repeat(12, 80px);
+                gap: 20px; 
+                justify-content: center; 
+            }
+            .header-top { 
+                grid-column: span 12; 
+                height: 40px; 
+            }
+            
+            .blue-block { 
+                grid-column: span 12; 
+                height: 200px; 
+            }
+            .teal-block { 
+                grid-column: span 4; 
+                height: 200px; 
+                display: flex; 
+            }
+            .green-block { 
+                grid-column: span 4; 
+                height: 200px; 
+                display: flex; 
+            }
+            .orange-block { 
+                grid-column: span 4; 
+                height: 200px; 
+                display: flex; 
+            }
+            .purple-block { 
+                grid-column: span 6; 
+                height: 300px; 
+                display: flex; 
+            }
+            .yellow-block { 
+                grid-column: span 6; 
+                height: 300px; 
+                display: flex; 
+            }
+
+            .footer-block { 
+                grid-column: span 12; 
+                height: 150px; 
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="grid-container">
+        <div class="item header-top">1280-80-20-12</div> 
+        <div class="item blue-block"></div>    
+        <div class="item teal-block"></div>
+        <div class="item green-block"></div>
+        <div class="item orange-block"></div>
+        <div class="item purple-block"></div>
+        <div class="item yellow-block"></div>
+        <div class="item footer-block"></div>
+    </div>
+
+</body>
+</html> 

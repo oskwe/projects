@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block title %}Журнал актов оприходования{% endblock %}
+{% block content %}
+<h4>Журнал актов оприходования материальных ценностей</h4>
+<div class="journal-toolbar">
+  <form method="get" class="journal-search" role="search">
+    <div class="input-field">
+      <i class="material-icons prefix">search</i>
+      <input type="search" id="q" name="q" value="{{ q }}" placeholder="Номер, организация, подрядчик, объект">
+    </div>
+    <button class="btn-flat waves-effect" type="submit">Найти</button>
+    {% if q %}<a class="btn-flat" href="{% url 'receipts:list' %}">Сбросить</a>{% endif %}
+  </form>
+  <a href="{% url 'receipts:create' %}" class="btn waves-effect blue"><i class="material-icons left">add</i>Добавить</a>
+</div>
+<div class="overflow">
+<table class="highlight striped responsive-table">
+  <thead><tr><th>№</th><th>Дата</th><th>Организация</th><th>Подрядчик</th><th>Склад</th><th class="right-align">Сумма, руб.</th><th>Действия</th></tr></thead>
+  <tbody>
+  {% for act in page %}
+    <tr>
+      <td>{{ act.number }}</td>
+      <td>{{ act.date|date:'d.m.Y' }}</td>
+      <td>{{ act.snapshot.organization.name|default:act.organization.name }}</td>
+      <td>{{ act.snapshot.contractor.name|default:act.contractor.name }}</td>
+      <td>{{ act.snapshot.warehouse.name|default:act.warehouse.name }}</td>
+      <td class="right-align nowrap">{{ act.totals.total|floatformat:"2g" }}</td>
+      <td class="action-buttons">
+        <a href="{% url 'receipts:detail' act.pk %}" class="btn-small green" aria-label="Просмотр" title="Просмотр"><i class="material-icons">visibility</i></a>
+        <a href="{% url 'receipts:print' act.pk %}" class="btn-small blue" aria-label="Печатная форма" title="Печатная форма"><i class="material-icons">print</i></a>
+        <a href="{% url 'receipts:edit' act.pk %}" class="btn-small orange" aria-label="Изменить" title="Изменить"><i class="material-icons">edit</i></a>
+        <a href="{% url 'receipts:copy' act.pk %}" class="btn-small teal" aria-label="Создать копию" title="Создать копию"><i class="material-icons">content_copy</i></a>
+        <a href="{% url 'receipts:delete' act.pk %}" class="btn-small red" aria-label="Удалить" title="Удалить"><i class="material-icons">delete</i></a>
+      </td>
+    </tr>
+  {% empty %}
+    <tr><td colspan="7">{% if q %}Ничего не найдено.{% else %}Актов оприходования пока нет. Нажмите «Добавить».{% endif %}</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+<p class="grey-text">Всего актов: {{ count }}</p>
+{% if page.has_other_pages %}<div class="pagination-bar">{% if page.has_previous %}<a href="?page={{ page.previous_page_number }}&q={{ q|urlencode }}">Назад</a>{% endif %}{{ page.number }} / {{ page.paginator.num_pages }}{% if page.has_next %}<a href="?page={{ page.next_page_number }}&q={{ q|urlencode }}">Далее</a>{% endif %}</div>{% endif %}
+{% endblock %}

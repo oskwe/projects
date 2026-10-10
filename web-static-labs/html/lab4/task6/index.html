@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8"/>
+    <title>Проверка даты и времени</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 50px;
+        }
+        input {
+            padding: 10px;
+            font-size: 16px;
+            width: 250px;
+            margin-bottom: 15px;
+        }
+        button {
+            padding: 10px 30px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .result {
+            margin-top: 20px;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        .success { color: green; }
+        .error { color: red; }
+    </style>
+</head>
+<body>
+    <h2>Проверка даты и времени</h2>
+    <p>Формат: дд-мм-гггг чч:мм:сс</p>
+    
+    <input type="text" id="datetimeInput" placeholder="11-03-2019 10:15:01"/>
+    <br>
+    <button id="checkBtn">Проверить</button>
+    
+    <div class="result" id="result"></div>
+
+    <script src="datetime.js" defer></script>
+</body>
+</html>

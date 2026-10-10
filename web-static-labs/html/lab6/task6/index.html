@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Lab 6 - Task 6: Форма студента</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            font-family: sans-serif;
+            max-width: 700px;
+            margin: 40px auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+
+        h1 { text-align: center; color: #333; }
+
+        .form-container {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .form-group { margin-bottom: 15px; }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        .row {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        .col { flex: 1; min-width: 150px; }
+
+        input[type="text"],
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            height: 42px; /* Выравнивание с инпутами */
+        }
+        .radio-group label { margin: 0; font-weight: normal; cursor: pointer; display: flex; align-items: center; gap: 5px;}
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .checkbox-group input { width: 20px; height: 20px; }
+        .checkbox-group label { margin: 0; cursor: pointer; font-weight: bold;}
+
+        /* Скрытый блок проекта */
+        #projectGroup {
+            display: none;
+            margin-top: 15px;
+            padding: 15px;
+            background: #f9f9f9;
+            border-left: 4px solid #007bff;
+            border-radius: 4px;
+        }
+        #projectGroup.visible { display: block; }
+
+        .buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+        }
+
+        button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-weight: bold;
+        }
+
+        .btn-save { background-color: #ffc107; color: #333; }
+        .btn-save:hover { background-color: #e0a800; }
+
+        .btn-send { background-color: #28a745; color: white; }
+        .btn-send:hover { background-color: #218838; }
+
+        .status-msg {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            text-align: center;
+            display: none;
+            font-weight: bold;
+        }
+        .status-msg.success { background-color: #d4edda; color: #155724; display: block; }
+        .status-msg.error { background-color: #f8d7da; color: #721c24; display: block; }
+
+    </style>
+</head>
+<body>
+
+    <h1>Анкета студента</h1>
+
+    <div class="form-container">
+        <form id="studentForm">
+            <!-- ФИО -->
+            <div class="row">
+                <div class="col form-group">
+                    <label for="surname">Фамилия *</label>
+                    <input type="text" id="surname" name="surname" required placeholder="Иванов">
+                </div>
+                <div class="col form-group">
+                    <label for="name">Имя *</label>
+                    <input type="text" id="name" name="name" required placeholder="Иван">
+                </div>
+                <div class="col form-group">
+                    <label for="patronymic">Отчество</label>
+                    <input type="text" id="patronymic" name="patronymic" placeholder="Иванович">
+                </div>
+            </div>
+
+            <!-- Пол -->
+            <div class="form-group">
+                <label>Пол *</label>
+                <div class="radio-group">
+                    <label><input type="radio" name="gender" value="male" checked> Мужской</label>
+                    <label><input type="radio" name="gender" value="female"> Женский</label>
+                </div>
+            </div>
+
+            <!-- Факультет -->
+            <div class="form-group">
+                <label for="faculty">Факультет *</label>
+                <select id="faculty" name="faculty" required>
+                    <option value="" disabled selected>Выберите факультет</option>
+                    <option value="it">Информационные технологии</option>
+                    <option value="econ">Экономика</option>
+                    <option value="law">Юриспруденция</option>
+                    <option value="eng">Инженерия</option>
+                </select>
+            </div>
+
+            <!-- Участие в проекте -->
+            <div class="checkbox-group">
+                <input type="checkbox" id="projectCheck" name="projectCheck">
+                <label for="projectCheck">Участвую в проекте</label>
+            </div>
+
+            <!-- Наименование проекта (скрытое) -->
+            <div id="projectGroup">
+                <div class="form-group">
+                    <label for="projectName">Наименование проекта *</label>
+                    <input type="text" id="projectName" name="projectName" placeholder="Введите название проекта">
+                </div>
+            </div>
+
+            <div class="buttons">
+                <button type="button" class="btn-save" id="saveBtn">Сохранить данные</button>
+                <button type="button" class="btn-send" id="sendBtn">Отправить</button>
+            </div>
+
+            <div id="statusMsg" class="status-msg"></div>
+        </form>
+    </div>
+
+    <script>
+        "use strict";
+
+        const form = document.getElementById('studentForm');
+        const projectCheck = document.getElementById('projectCheck');
+        const projectGroup = document.getElementById('projectGroup');
+        const projectNameInput = document.getElementById('projectName');
+        const saveBtn = document.getElementById('saveBtn');
+        const sendBtn = document.getElementById('sendBtn');
+        const statusMsg = document.getElementById('statusMsg');
+
+        const STORAGE_KEY = 'studentFormData';
+        let isDataSaved = false; // Флаг сохранения
+
+        // --- 1. Логика отображения поля проекта ---
+        projectCheck.addEventListener('change', () => {
+            if (projectCheck.checked) {
+                projectGroup.classList.add('visible');
+                projectNameInput.required = true;
+            } else {
+                projectGroup.classList.remove('visible');
+                projectNameInput.required = false;
+                projectNameInput.value = ''; // Очищаем, если сняли галочку
+            }
+        });
+
+        // --- 2. Функции сохранения/загрузки ---
+
+        function getFormData() {
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+            // Радио-кнопки могут не попасть в Object.fromEntries корректно, если их много, но тут одна группа.
+            // Для надежности явно пропишем пол, если нужно, но FormData обычно справляется с checked radio.
+            data.gender = form.querySelector('input[name="gender"]:checked').value;
+            data.hasProject = projectCheck.checked;
+            return data;
+        }
+
+        function saveData() {
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                showStatus('Заполните обязательные поля!', 'error');
+                return false;
+            }
+
+            // Если выбран проект, а поле пустое (валидация HTML сработает выше, но на всякий случай)
+            if (projectCheck.checked && !projectNameInput.value.trim()) {
+                showStatus('Введите название проекта!', 'error');
+                projectNameInput.focus();
+                return false;
+            }
+
+            const data = getFormData();
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+            
+            isDataSaved = true;
+            showStatus('Данные успешно сохранены в LocalStorage!', 'success');
+            return true;
+        }
+
+        function loadData() {
+            const stored = localStorage.getItem(STORAGE_KEY);
+            if (stored) {
+                try {
+                    const data = JSON.parse(stored);
+                    
+                    // Заполняем поля
+                    form.surname.value = data.surname || '';
+                    form.name.value = data.name || '';
+                    form.patronymic.value = data.patronymic || '';
+                    
+                    const genderRadio = form.querySelector(`input[name="gender"][value="${data.gender}"]`);
+                    if (genderRadio) genderRadio.checked = true;
+
+                    form.faculty.value = data.faculty || '';
+                    
+                    // Чекбокс и проект
+                    if (data.hasProject) {
+                        projectCheck.checked = true;
+                        projectGroup.classList.add('visible');
+                        projectNameInput.required = true;
+                        projectNameInput.value = data.projectName || '';
+                    } else {
+                        projectCheck.checked = false;
+                        projectGroup.classList.remove('visible');
+                        projectNameInput.required = false;
+                    }
+
+                    isDataSaved = true; // Считаем, что загруженные данные "сохранены"
+                    showStatus('Данные восстановлены из памяти.', 'success');
+                } catch (e) {
+                    console.error('Ошибка загрузки данных', e);
+                }
+            }
+        }
+
+        function showStatus(msg, type) {
+            statusMsg.textContent = msg;
+            statusMsg.className = `status-msg ${type}`;
+            setTimeout(() => {
+                statusMsg.style.display = 'none';
+            }, 4000);
+        }
+
+        // --- 3. Отправка (открытие новой страницы) ---
+
+        function sendData() {
+            // Сначала пытаемся сохранить, чтобы данные точно были актуальны
+            if (!saveData()) return;
+
+            const data = getFormData();
+
+            // Генерируем HTML для новой страницы
+            const newWindowContent = `
+                <!DOCTYPE html>
+                <html lang="ru">
+                <head>
+                    <meta charset="UTF-8">
+                    <title>Данные студента</title>
+                    <style>
+                        body { font-family: sans-serif; padding: 40px; background: #f4f4f4; }
+                        .card { background: white; padding: 30px; border-radius: 8px; max-width: 600px; margin: 0 auto; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+                        h2 { text-align: center; color: #333; }
+                        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+                        th { background-color: #f8f9fa; width: 40%; color: #555; }
+                        tr:nth-child(even) { background-color: #f9f9f9; }
+                    </style>
+                </head>
+                <body>
+                    <div class="card">
+                        <h2>Карточка студента</h2>
+                        <table>
+                            <tr><th>Фамилия</th><td>${escapeHtml(data.surname)}</td></tr>
+                            <tr><th>Имя</th><td>${escapeHtml(data.name)}</td></tr>
+                            <tr><th>Отчество</th><td>${escapeHtml(data.patronymic || '-')}</td></tr>
+                            <tr><th>Пол</th><td>${data.gender === 'male' ? 'Мужской' : 'Женский'}</td></tr>
+                            <tr><th>Факультет</th><td>${getFacultyName(data.faculty)}</td></tr>
+                            <tr><th>Участие в проекте</th><td>${data.hasProject ? 'Да' : 'Нет'}</td></tr>
+                            ${data.hasProject ? `<tr><th>Проект</th><td>${escapeHtml(data.projectName)}</td></tr>` : ''}
+                        </table>
+                        <p style="text-align:center; margin-top:20px; color:#777;">
+                            <button onclick="window.close()" style="padding:10px 20px; cursor:pointer;">Закрыть</button>
+                        </p>
+                    </div>
+                    <script>
+                        function getFacultyName(code) {
+                            const map = { 'it': 'Информационные технологии', 'econ': 'Экономика', 'law': 'Юриспруденция', 'eng': 'Инженерия' };
+                            return map[code] || code;
+                        }
+                        function escapeHtml(text) {
+                            if (!text) return '';
+                            return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+                        }
+                    <\/script>
+                </body>
+                </html>
+            `;
+
+            // Открываем новое окно
+            const newWin = window.open('', '_blank', 'width=700,height=600');
+            if (newWin) {
+                newWin.document.write(newWindowContent);
+                newWin.document.close();
+            } else {
+                alert('Браузер заблокировал открытие нового окна. Разрешите всплывающие окна для этого сайта.');
+            }
+            
+            // После успешной "отправки" можно сбросить флаг, если хотим, чтобы следующее изменение снова триггерило предупреждение
+            // Но обычно после отправки пользователь продолжает работать, так что оставим isDataSaved = true
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            return String(text)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        // --- 4. Обработчики кнопок ---
+
+        saveBtn.addEventListener('click', saveData);
+        sendBtn.addEventListener('click', sendData);
+
+        // Отслеживание изменений формы для сброса флага "Сохранено"
+        form.addEventListener('input', () => {
+            isDataSaved = false;
+        });
+        form.addEventListener('change', () => {
+            isDataSaved = false;
+        });
+
+        // --- 5. Предупреждение перед закрытием/обновлением (beforeunload) ---
+
+        window.addEventListener('beforeunload', (event) => {
+            // Если данные были изменены и не сохранены
+            if (!isDataSaved) {
+                // Стандартный способ вызвать диалог браузера
+                event.preventDefault();
+                event.returnValue = ''; // Требуется для поддержки старых браузеров и некоторых новых
+                return '';
+            }
+        });
+
+        // Инициализация при загрузке
+        window.addEventListener('DOMContentLoaded', loadData);
+
+    </script>
+</body>
+</html>

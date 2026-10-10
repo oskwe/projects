@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Лабораторная 1, задание 4. Мясников Никита ПИ2402</title>
+    <style>
+        h1, h2 {
+            text-align: center;
+            margin: 20px;
+            color: #333;
+        }
+        table {
+            width: 100%;
+            max-width: 700px;
+            margin: 20px auto;
+            border-collapse: collapse;
+            font-family: Arial, sans-serif;
+        } 
+        th, td {
+            border: 1px solid #000;
+            padding: 12px 10px;
+            text-align: center;
+            vertical-align: top; 
+        }
+        th {
+            background-color: #f2f2f0;
+        }
+        img {
+            max-width: 150px;
+            height: auto;
+            display: block;
+            margin: 0 auto;
+        }
+        .desc {
+            text-align: left;
+            padding-left: 8px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Задание 4</h1>
+    <h2>Основные физические топологии сетей</h2>
+
+    <table>
+        <thead>
+            <tr>
+                <th>№</th>
+                <th>Рисунок</th>
+                <th>Описание</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1</td>
+                <td><img src="topology-start.png" alt="Топология звезда"></td>
+                <td class="desc">Все устройства подключены к центральному узлу. Простая диагностика, но отказ центра даёт общий сбой.</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td><img src="topology-bus.png" alt="Топология шина"></td>
+                <td class="desc">Все устройства подключены к одной общей линии. Экономична, но при обрыве шины сеть полностью отключается.</td>
+            </tr>
+            <tr>
+                <td>3</td>
+                <td><img src="topology-ring.png" alt="Топология кольцо"></td>
+                <td class="desc">Устройства соединены в замкнутый круг. Данные передаются по кольцу последовательно. Устойчива к нагрузке, но сбой одного узла может нарушить всю сеть.</td>
+            </tr>
+        </tbody>
+    </table>
+</body>
+</html>
